@@ -1,0 +1,88 @@
+line "text" 
+--->
+char str[]="text";
+pressLine(str);
+
+KEY;rest
+--->
+UpperOrLowerPress(KEY);
+transl(rest);
+
+repeat n (seq)
+--->
+for (int i = 0; i < n; ++i) {
+    transl(seq);
+}
+
+while key (seq)
+--->
+{
+    INPUT ip;
+    pressHoldKey(&ip, key);
+    transl(seq);
+    releaseKey(&ip);
+}
+
+SLEEP n
+--->
+Sleep(n)
+
+LARROW
+--->
+VK_LEFT
+
+UARROW
+--->
+VK_UP
+
+DARROW
+--->
+VK_DOWN
+
+RARROW
+--->
+VK_RIGHT
+
+SHIFT
+--->
+VK_SHIFT
+
+TAB
+--->
+VK_TAB
+
+ENTER
+--->
+VK_RETURN
+
+ESC
+--->
+VK_ESCAPE
+
+SPACE
+--->
+VK_SPACE	
+
+CONTROL
+--->
+VK_LCONTROL
+
+LCONTROL
+--->
+VK_LCONTROL
+
+RCONTROL
+--->
+VK_RCONTROL
+
+ALT
+--->
+VK_LMENU
+
+LALT
+--->
+VK_LMENU	
+
+RALT
+--->
+VK_RMENU
