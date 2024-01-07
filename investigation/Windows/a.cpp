@@ -13,7 +13,7 @@ using namespace std;
     Given an INPUT and a key press that key and dont release it, 
     commonly used for SHIFT, CTRL or WINDOWS
 */
-void pressHoldKey (INPUT* ip, char key) {
+void pressKey (INPUT* ip, char key) {
     // Set up a generic keyboard event.
     ip->type = INPUT_KEYBOARD;
     ip->ki.wScan = 0; // hardware scan code for key
@@ -36,7 +36,7 @@ void releaseKey (INPUT* ip) {
 /*
     Press a key one time
 */
-void pressKey (char key) {
+void pressAndReleaseKey (char key) {
     INPUT ip;
     pressHoldKey(&ip, key);
     releaseKey(&ip);
@@ -52,80 +52,30 @@ void pressShiftPLusKey (char key) {
     releaseKey(&ip);
 }
 
-void upperOrLowerPress (char key) {
-    if (isdigit(key) || islower(key)) {
-        pressKey(toupper(key));
-    } else if (isupper(key)) {
-        pressShiftPLusKey(key);
-    }
+/*
+    checks if the char needs shift
+    TO DO revise
+*/
+bool needsShift(char key) {
+    return (isupper(key) || key == '!' || key == '~' || key == '@' || key == '#' ||
+        key == '$' || key == '%' || key == '^' || key == '&' || key == '*' ||
+        key == '(' || key == ')' || key == '_' || key == '+' || key == '{' ||
+        key == '}' || key == '|' || key == ':' || key == '"' || key == '<' ||
+        key == '>' || key == '?');
 }
 
-void pressKeyWithSymbols (char key) {
-    if (isalnum(key)) {
-        upperOrLowerPress(key);
-        return;
-    }
-    switch (key)
-    {
-    case '+':
-        pressKey(VK_OEM_PLUS);
-        break;
-    case '-':
-        pressKey(VK_OEM_MINUS);
-        break;
-    case '_':
-        pressShiftPLusKey(VK_OEM_MINUS);
-        break;
-    case '*':
-        pressShiftPLusKey(VK_OEM_PLUS);
-        break;
-    case ' ':
-        pressKey(VK_SPACE);
-        break;
-    case '=':
-        pressShiftPLusKey('0');
-        break;
-    case '(':
-        pressShiftPLusKey('8');
-        break;
-    case ')':
-        pressShiftPLusKey('9');
-        break;
-    case ',':
-        pressKey(VK_OEM_COMMA);
-        break;
-    case ';':
-        pressShiftPLusKey(VK_OEM_COMMA);
-        break;
-    case '\"':
-        pressShiftPLusKey('2');
-        break;
-    case '.':
-        pressKey(VK_OEM_PERIOD);
-        break;
-    case ':':
-        pressShiftPLusKey(VK_OEM_PERIOD);
-        break;
-    case '#':
-        pressShiftPLusKey('3');
-        break;
-    case '$':
-        pressShiftPLusKey('4');
-        break;
-    case '%':
-        pressShiftPLusKey('5');
-        break;
-    case '&':
-        pressShiftPLusKey('6');
-        break;
-    case '/':
-        pressShiftPLusKey('7');
-        break;
-    case '!':
-        pressShiftPLusKey('1');
-        break;
-    default:
-        break;
+/*
+    press the char even if it needs shift or not
+    TO DO revise
+*/
+void upperOrLowerPress (char key) {
+    if (needsShift(key)) {
+        pressShiftPLusKey(key);
+    } else if (key == '\n') {
+        pressKey(XK_Return);
+        releaseKey(XK_Return);
+    } else {
+        pressAndReleaseKey(key);
     }
 }
 
@@ -133,9 +83,9 @@ void pressKeyWithSymbols (char key) {
     Press a series of keys corresponding to an array of char
 */
 void pressLine (char* keys) {
-    while (*keys != '\0') {
-        pressKeyWithSymbols(*keys);
-        keys++;
+    for (size_t i = 0; i < strlen(str); i++) {
+        upperOrLowerPress(str[i]);
+        usleep(10000);  // Add a small delay between key presses (adjust as needed)
     }
 }
 
@@ -146,7 +96,10 @@ int main()
         cout << "IS ON" << endl;
         pressKey(VK_CAPITAL);
     }
-    Sleep(5000);
+
+    // ---------------------------------------------------
+
+    sleep(5);
     for (int i = 0; i<20; i++) {
         char str[]="hola linda";
         pressLine(str);
@@ -175,5 +128,8 @@ int main()
     // releaseKey(&ip);
     // }
 
+
+    // ---------------------------------------------------
+    
     return 0;
 }
