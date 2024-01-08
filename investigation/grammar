@@ -1,0 +1,37 @@
+Exp     : Defexp
+        | Macro
+
+Defexp  : def VAR = Macro
+
+Macro   : Cont;Macro
+        | Cont
+
+Cont    : (Macro)
+        | line STRING
+        | repeat INT (Macro)
+        | while key (Macro) -- Tal vez key+(Macro)
+        | sleep INT
+        | usleep INT
+        | key
+
+MacroFW : ContFW;MacroFW
+        | ContFW
+
+ContFW  : (MacroFW)
+        | repeat INT (MacroFW)
+        | while key (MacroFW) -- Tal vez key+(MacroFW)
+        | sleep INT
+        | usleep INT
+        | key
+
+key     : CHAR
+        | special
+
+special : LARROW | UARROW | DARROW | RARROW
+        | SHIFT | LSHIFT | RSHIFT | TAB | RETURN 
+        | ENTER | ESC | SPACE | CONTROL | LCONTROL
+        | RCONTROL | ALT | LALT | RALT | SUPR | 
+        | BACKSPACE | SUPER | LSUPER | RSUPER |
+        | MENU | fn
+
+fn : FINT
