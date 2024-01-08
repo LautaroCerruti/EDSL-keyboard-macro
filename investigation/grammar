@@ -9,7 +9,7 @@ Macro   : Cont;Macro
 Cont    : (Macro)
         | line STRING
         | repeat INT (Macro)
-        | while key (Macro) -- Tal vez key+(Macro)
+        | while key (MacroFW) -- Tal vez key+(Macro)
         | sleep INT
         | usleep INT
         | key
