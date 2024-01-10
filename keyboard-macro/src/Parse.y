@@ -6,7 +6,6 @@ import Data.Char
 }
 
 %monad { P } { thenP } { returnP }
-%name parseStmt Def
 %name parseStmts Defs
 
 %tokentype { Token }
@@ -26,15 +25,15 @@ import Data.Char
     CHAR    { TChar $$ }
     INT     { TInt $$ }
     STRING  { TString $$ }
-    LINE  { TLine $$ }
+    LINE    { TLine $$ }
 
 %left '=' 
 %right ';' 
 
 %%
 
-Def     :  DEF VAR '=' Macro           { Def $2 $4 }
-        |  MACRO VAR '=' Macro	       { Macro $2 $4 }
+Def     :  DEF STRING '=' Macro        { Def $2 $4 }
+        |  MACRO STRING '=' Macro      { Macro $2 $4 }
 
 Macro   :: { Tm }
         : Cont ';' Macro               { Seq $1 $3}
@@ -47,7 +46,7 @@ Cont    :: { Tm }
         | WHILE Key '(' Macro ')'       { While $2 $4 }
         | SLEEP INT                     { Sleep $2 }
         | USLEEP INT                    { Usleep $2 }
-        | VAR                           { Var $1 }
+        | STRING                        { Var $1 }
         | Key                           { Key $1 }
 
 Key     :: { Key }
@@ -109,7 +108,7 @@ lexer cont s = case s of
                     (c:cs)
                           | isSpace c -> lexer cont cs
                           | isAlpha c -> lexVar (c:cs)
-                          | isDigit c = lexNum (c:cs)
+                          | isDigit c -> lexNum (c:cs)
                     ('-':('-':cs)) -> lexer cont $ dropWhile ((/=) '\n') cs
                     ('{':('-':cs)) -> consumirBK 0 0 cont cs	
                     ('-':('}':cs)) -> \ line -> Failed $ "Línea "++(show line)++": Comentario no abierto"
@@ -122,12 +121,12 @@ lexer cont s = case s of
                     where lexVar cs = case span isAlpha cs of
                               ("def",rest)  -> cont TDef rest
                               ("macro",rest)  -> cont TMacro rest
-                              ("line",([' ', '\"']:rest))  -> if elem '\"' rest then cont (TLine (takeTillChar '\"' rest)) (dropTillChar '\"' rest) else \ line -> Failed $ "Línea "++(show line)++": Unmatched \""
+                              ("line",(' ':('\"':rest)))  -> if elem '\"' rest then cont (TLine (takeTillChar '\"' rest)) (dropTillChar '\"' rest) else \ line -> Failed $ "Línea "++(show line)++": Unmatched \""
                               ("repeat",rest)  -> cont TRepeat rest
                               ("while",rest)  -> cont TWhile rest
                               ("sleep",rest)  -> cont TSleep rest
                               ("usleep",rest) -> cont TUSleep rest
-                              (var,rest)      -> if (length(var) > 1) then cont (TString var) rest else cont (TChar var) rest
+                              (var,rest)      -> if (length(var) > 1) then cont (TString var) rest else cont (TChar (head var)) rest
                           lexNum cs = let (num,rest) = span isDigit cs in cont (TInt (read num)) rest
                           consumirBK anidado cl cont s = case s of
                               ('-':('-':cs)) -> consumirBK anidado cl cont $ dropWhile ((/=) '\n') cs
@@ -141,5 +140,4 @@ lexer cont s = case s of
                           dropTillChar c (f:rest) = if (c == f) then rest else dropTillChar c rest
 
 stmts_parse s = parseStmts s 1
-stmt_parse s = parseStmt s 1
 }

@@ -21,6 +21,14 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- containers
+- pretty
+- array
+- haskeline >= 0.8.0.0
+- mtl
+- exceptions
+- strict
+- QuickCheck
 
 ghc-options:
 - -Wall
@@ -32,6 +40,14 @@ ghc-options:
 - -Wmissing-home-modules
 - -Wpartial-fields
 - -Wredundant-constraints
+
+default-extensions:
+- GADTs
+- StandaloneDeriving
+- PatternSynonyms
+- FlexibleInstances
+- TupleSections
+- MultiWayIf
 
 library:
   source-dirs: src
@@ -46,6 +62,8 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - keyboard-macro
+    build-tools:
+    - happy
 
 tests:
   keyboard-macro-test:
@@ -57,3 +75,5 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - keyboard-macro
+    build-tools:
+    - happy

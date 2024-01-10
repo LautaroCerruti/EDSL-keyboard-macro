@@ -1,0 +1,5 @@
+def test = while y (repeat 4 (w))
+
+def megaTest = repeat 1000 (test)
+
+macro hola = megaTest;megaTest

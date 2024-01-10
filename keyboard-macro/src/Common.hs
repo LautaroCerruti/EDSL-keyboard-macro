@@ -24,12 +24,15 @@ module Common where
         | Repeat Int Tm
         | Line String
         | Seq Tm Tm
+        deriving Show
 
     data Key = NKey Char | Skey SpecialKey
+        deriving Show
 
     data SpecialKey = LARROW | UARROW | DARROW | RARROW
         | SHIFT | LSHIFT | RSHIFT | TAB | RETURN 
         | ENTER | ESC | SPACE | CONTROL | LCONTROL
-        | RCONTROL | ALT | LALT | RALT | SUPR | 
-        | BACKSPACE | SUPER | LSUPER | RSUPER |
+        | RCONTROL | ALT | LALT | RALT | SUPR 
+        | BACKSPACE | SUPER | LSUPER | RSUPER 
         | MENU | Fkey Int
+        deriving Show
