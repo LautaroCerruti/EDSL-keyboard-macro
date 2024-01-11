@@ -1,13 +1,10 @@
 Exp     : def VAR = Macro
         | macro STRING = Macro
 
-Macro   : Cont;Macro
-        | Cont
-
-Cont    : (Macro)
+Macro   : Macro;Macro
         | line STRING
         | repeat INT (Macro)
-        | while key (Macro) -- Tal vez key+(Macro)
+        | key+(Macro)
         | sleep INT
         | usleep INT
         | Key

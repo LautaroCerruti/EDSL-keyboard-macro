@@ -14,12 +14,12 @@ import Data.Char
 %token
     '='         { TEquals }
     ';'         { TSemicolon }
+    '+'         { TPLus }
     '('         { TOpen }
     ')'         { TClose }
     DEF         { TDef }
     MACRO       { TMacro }
     REPEAT      { TRepeat }
-    WHILE       { TWhile }
     SLEEP       { TSleep }
     USLEEP      { TUSleep }
     CHAR        { TChar $$ }
@@ -53,7 +53,8 @@ import Data.Char
     FKEY        { TFKey $$ }
 
 %left '=' 
-%right ';' 
+%left ';'  
+%right '+'
 
 %%
 
@@ -61,18 +62,15 @@ Def     :  DEF STRING '=' Macro         { Def $2 $4 }
         |  MACRO STRING '=' Macro       { Macro $2 $4 }
 
 Macro   :: { Tm }
-        : Cont ';' Macro                { Seq $1 $3}
-        | Cont                          { $1 }
-
-Cont    :: { Tm }
-        : '(' Macro ')'                 { $2 }
+        : Macro ';' Macro                { Seq $1 $3}
         | LINE                          { Line $1}
-        | REPEAT INT '(' Macro ')'      { Repeat $2 $4}
-        | WHILE Key '(' Macro ')'       { While $2 $4 }
+        | REPEAT INT Macro              { Repeat $2 $3}
+        | Key '+' Macro                 { While $1 $3 }
         | SLEEP INT                     { Sleep $2 }
         | USLEEP INT                    { Usleep $2 }
         | STRING                        { Var $1 }
         | Key                           { Key $1 }
+        | '(' Macro ')'                 { $2 }
 
 Key     :: { Key }
         : CHAR                          { NKey $1 }
@@ -144,12 +142,12 @@ data Token = TString String
                | TFKey Int
                | TDef
                | TOpen
+               | TPLus
                | TClose 
                | TSemicolon
                | TEquals
                | TMacro
                | TRepeat
-               | TWhile
                | TSleep
                | TUSleep
                | TLARROW
@@ -193,6 +191,7 @@ lexer cont s = case s of
                     ('(':cs) -> cont TOpen cs
                     (')':cs) -> cont TClose cs
                     ('=':cs) -> cont TEquals cs
+                    ('+':cs) -> cont TPLus cs
                     (';':cs) -> cont TSemicolon cs
                     unknown -> \line -> Failed $ 
                      "Línea "++(show line)++": No se puede reconocer "++(show $ take 10 unknown)++ "..."
@@ -201,7 +200,6 @@ lexer cont s = case s of
                               ("macro",rest)  -> cont TMacro rest
                               ("line",(' ':('\"':rest)))  -> if elem '\"' rest then cont (TLine (takeTillChar '\"' rest)) (dropTillChar '\"' rest) else \ line -> Failed $ "Línea "++(show line)++": Unmatched \""
                               ("repeat",rest)  -> cont TRepeat rest
-                              ("while",rest)  -> cont TWhile rest
                               ("sleep",rest)  -> cont TSleep rest
                               ("usleep",rest) -> cont TUSleep rest
                               ("LARROW", rest) -> cont TLARROW rest 

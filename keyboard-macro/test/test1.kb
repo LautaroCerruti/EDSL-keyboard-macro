@@ -11,5 +11,8 @@ def testing = repeat 8 (
     test;W;line "prueba"
 )
 
-def testingds = while CONTROL (c);while CONTROL (v)
+def testing = repeat 9 test
+def plus = ALT + (k + repeat 2 u)
+
+def testingds = CONTROL+c;CONTROL+v;CONTROL+(c;d)
 def asd = usleep 2; sleep 8
