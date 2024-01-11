@@ -1,5 +1,15 @@
-def test = while y (repeat 4 (w))
+def test = F1;F2;F3;F4;F5;F6;F7;F8;F8;F9;F10;F11;F12
 
-def megaTest = repeat 1000 (test)
+def megaTest = LARROW;UARROW;DARROW;RARROW
 
-macro hola = megaTest;megaTest
+def testdos = SHIFT;LSHIFT;RSHIFT;TAB;RETURN;ENTER 
+def testtres = ESC;SPACE;CONTROL;LCONTROL;RCONTROL
+def testcuatro = ALT;LALT;RALT;SUPR;BACKSPACE;SUPER
+def testcinco = LSUPER;RSUPER;MENU
+
+def testing = repeat 8 (
+    test;W;line "prueba"
+)
+
+def testingds = while CONTROL (c);while CONTROL (v)
+def asd = usleep 2; sleep 8

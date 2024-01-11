@@ -12,32 +12,57 @@ import Data.Char
 %lexer {lexer} {TEOF}
 
 %token
-    '='     { TEquals }
-    ';'     { TSemicolon }
-    '('     { TOpen }
-    ')'     { TClose }
-    DEF     { TDef }
-    MACRO   { TMacro }
-    REPEAT  { TRepeat }
-    WHILE   { TWhile }
-    SLEEP   { TSleep }
-    USLEEP  { TUSleep }
-    CHAR    { TChar $$ }
-    INT     { TInt $$ }
-    STRING  { TString $$ }
-    LINE    { TLine $$ }
+    '='         { TEquals }
+    ';'         { TSemicolon }
+    '('         { TOpen }
+    ')'         { TClose }
+    DEF         { TDef }
+    MACRO       { TMacro }
+    REPEAT      { TRepeat }
+    WHILE       { TWhile }
+    SLEEP       { TSleep }
+    USLEEP      { TUSleep }
+    CHAR        { TChar $$ }
+    INT         { TInt $$ }
+    STRING      { TString $$ }
+    LINE        { TLine $$ }
+    LARROW      { TLARROW }
+    UARROW      { TUARROW }
+    DARROW      { TDARROW }
+    RARROW      { TRARROW }
+    SHIFT       { TSHIFT }
+    LSHIFT      { TLSHIFT }
+    RSHIFT      { TRSHIFT }
+    TAB         { TTAB }
+    RETURN      { TRETURN }
+    ENTER       { TENTER }
+    ESC         { TESC }
+    SPACE       { TSPACE }
+    CONTROL     { TCONTROL }
+    LCONTROL    { TLCONTROL }
+    RCONTROL    { TRCONTROL }
+    ALT         { TALT }
+    LALT        { TLALT }
+    RALT        { TRALT }
+    SUPR        { TSUPR }
+    BACKSPACE   { TBACKSPACE }
+    SUPER       { TSUPER }
+    LSUPER      { TLSUPER }
+    RSUPER      { TRSUPER }
+    MENU        { TMENU }
+    FKEY        { TFKey $$ }
 
 %left '=' 
 %right ';' 
 
 %%
 
-Def     :  DEF STRING '=' Macro        { Def $2 $4 }
-        |  MACRO STRING '=' Macro      { Macro $2 $4 }
+Def     :  DEF STRING '=' Macro         { Def $2 $4 }
+        |  MACRO STRING '=' Macro       { Macro $2 $4 }
 
 Macro   :: { Tm }
-        : Cont ';' Macro               { Seq $1 $3}
-        | Cont                         { $1 }
+        : Cont ';' Macro                { Seq $1 $3}
+        | Cont                          { $1 }
 
 Cont    :: { Tm }
         : '(' Macro ')'                 { $2 }
@@ -50,9 +75,37 @@ Cont    :: { Tm }
         | Key                           { Key $1 }
 
 Key     :: { Key }
-        : CHAR                           { NKey $1 }
+        : CHAR                          { NKey $1 }
+        | Special                       { Skey $1 }
 
-Defs    : Def Defs                   { $1 : $2 }
+Special :: { SpecialKey }
+        : LARROW                        { LARROW }
+        | UARROW                        { UARROW }
+        | DARROW                        { DARROW }
+        | RARROW                        { RARROW }
+        | SHIFT                         { SHIFT }
+        | LSHIFT                        { LSHIFT }
+        | RSHIFT                        { RSHIFT }
+        | TAB                           { TAB }
+        | RETURN                        { RETURN }
+        | ENTER                         { ENTER }
+        | ESC                           { ESC }
+        | SPACE                         { SPACE }
+        | CONTROL                       { CONTROL }
+        | LCONTROL                      { LCONTROL }
+        | RCONTROL                      { RCONTROL }
+        | ALT                           { ALT }
+        | LALT                          { LALT }
+        | RALT                          { RALT }
+        | SUPR                          { SUPR }
+        | BACKSPACE                     { BACKSPACE }
+        | SUPER                         { SUPER }
+        | LSUPER                        { LSUPER }
+        | RSUPER                        { RSUPER }
+        | MENU                          { MENU }
+        | FKEY                          { Fkey $1 }
+
+Defs    : Def Defs                      { $1 : $2 }
         |                               { [] }
 
 {
@@ -88,6 +141,7 @@ data Token = TString String
                | TInt Int
                | TChar Char
                | TLine String
+               | TFKey Int
                | TDef
                | TOpen
                | TClose 
@@ -98,6 +152,30 @@ data Token = TString String
                | TWhile
                | TSleep
                | TUSleep
+               | TLARROW
+               | TUARROW
+               | TDARROW
+               | TRARROW
+               | TSHIFT
+               | TLSHIFT
+               | TRSHIFT
+               | TTAB
+               | TRETURN
+               | TENTER
+               | TESC
+               | TSPACE
+               | TCONTROL
+               | TLCONTROL
+               | TRCONTROL
+               | TALT
+               | TLALT
+               | TRALT
+               | TSUPR
+               | TBACKSPACE
+               | TSUPER
+               | TLSUPER
+               | TRSUPER
+               | TMENU
                | TEOF
                deriving Show
 
@@ -126,6 +204,42 @@ lexer cont s = case s of
                               ("while",rest)  -> cont TWhile rest
                               ("sleep",rest)  -> cont TSleep rest
                               ("usleep",rest) -> cont TUSleep rest
+                              ("LARROW", rest) -> cont TLARROW rest 
+                              ("UARROW", rest) -> cont TUARROW rest 
+                              ("DARROW", rest) -> cont TDARROW rest 
+                              ("RARROW", rest) -> cont TRARROW rest 
+                              ("SHIFT", rest) -> cont TSHIFT rest 
+                              ("LSHIFT", rest) -> cont TLSHIFT rest 
+                              ("RSHIFT", rest) -> cont TRSHIFT rest 
+                              ("TAB", rest) -> cont TTAB rest 
+                              ("RETURN", rest) -> cont TRETURN rest 
+                              ("ENTER", rest) -> cont TENTER rest 
+                              ("ESC", rest) -> cont TESC rest 
+                              ("SPACE", rest) -> cont TSPACE rest 
+                              ("CONTROL", rest) -> cont TCONTROL rest 
+                              ("LCONTROL", rest) -> cont TLCONTROL rest 
+                              ("RCONTROL", rest) -> cont TRCONTROL rest 
+                              ("ALT", rest) -> cont TALT rest 
+                              ("LALT", rest) -> cont TLALT rest 
+                              ("RALT", rest) -> cont TRALT rest 
+                              ("SUPR", rest) -> cont TSUPR rest 
+                              ("BACKSPACE", rest) -> cont TBACKSPACE rest 
+                              ("SUPER", rest) -> cont TSUPER rest 
+                              ("LSUPER", rest) -> cont TLSUPER rest 
+                              ("RSUPER", rest) -> cont TRSUPER rest 
+                              ("MENU", rest) -> cont TMENU rest 
+                              ("F",'1':('0':rest)) -> cont (TFKey 10) rest
+                              ("F",'1':('1':rest)) -> cont (TFKey 11) rest
+                              ("F",'1':('2':rest)) -> cont (TFKey 12) rest
+                              ("F",'1':rest) -> cont (TFKey 1) rest
+                              ("F",'2':rest) -> cont (TFKey 2) rest
+                              ("F",'3':rest) -> cont (TFKey 3) rest
+                              ("F",'4':rest) -> cont (TFKey 4) rest
+                              ("F",'5':rest) -> cont (TFKey 5) rest
+                              ("F",'6':rest) -> cont (TFKey 6) rest
+                              ("F",'7':rest) -> cont (TFKey 7) rest
+                              ("F",'8':rest) -> cont (TFKey 8) rest
+                              ("F",'9':rest) -> cont (TFKey 9) rest
                               (var,rest)      -> if (length(var) > 1) then cont (TString var) rest else cont (TChar (head var)) rest
                           lexNum cs = let (num,rest) = span isDigit cs in cont (TInt (read num)) rest
                           consumirBK anidado cl cont s = case s of

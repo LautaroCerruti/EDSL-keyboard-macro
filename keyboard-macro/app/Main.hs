@@ -3,7 +3,7 @@ module Main where
 import           Parse                        
 import           System.Console.GetOpt
 import qualified System.Environment            as Env
---import           PPLis
+import           PrettyPrinter
 
 ---------------------------------------------------------
 
@@ -66,7 +66,7 @@ runOptions fp opts
       Nothing -> return ()
       Just ast   -> if
         | optAST opts       -> print ast
-        -- | optPrint opts     -> putStrLn (renderComm ast)
+        | optPrint opts     -> mapM_ putStrLn (map renderStmt ast)
         -- | optLinux opts     -> Compile Linux
         -- | optWindows opts   -> Compile Windows
         -- | otherwise         -> Compile Linux

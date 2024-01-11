@@ -27,6 +27,7 @@ library
   exposed-modules:
       Common
       Parse
+      PrettyPrinter
   other-modules:
       Paths_keyboard_macro
   autogen-modules:
