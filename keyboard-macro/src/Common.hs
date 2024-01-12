@@ -36,3 +36,11 @@ module Common where
         | BACKSPACE | SUPER | LSUPER | RSUPER 
         | MENU | Fkey Int
         deriving Show
+
+    data GlEnv = GlEnv {
+            glb :: [Stmt Tm]  -- ^ Entorno con las variables definidas
+        }   
+
+    -- | Valor del estado inicial
+    initialEnv :: GlEnv
+    initialEnv = GlEnv [] 

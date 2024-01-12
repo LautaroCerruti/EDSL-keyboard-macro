@@ -74,6 +74,7 @@ Macro   :: { Tm }
 
 Key     :: { Key }
         : CHAR                          { NKey $1 }
+        | INT                           { NKey (head (show $1))}
         | Special                       { Skey $1 }
 
 Special :: { SpecialKey }

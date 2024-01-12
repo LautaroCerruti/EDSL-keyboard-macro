@@ -8,7 +8,7 @@ def testcuatro = ALT;LALT;RALT;SUPR;BACKSPACE;SUPER
 def testcinco = LSUPER;RSUPER;MENU
 
 def testing = repeat 8 (
-    test;W;line "prueba"
+    test;W;line "prueba"; repeat 7 9
 )
 
 def testing = repeat 9 test

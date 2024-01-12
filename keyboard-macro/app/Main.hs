@@ -5,6 +5,12 @@ import           System.Console.GetOpt
 import qualified System.Environment            as Env
 import           PrettyPrinter
 
+import System.Exit ( exitWith, ExitCode(ExitFailure) )
+import System.IO ( hPrint, stderr )
+import Common
+
+import           MonadKM
+
 ---------------------------------------------------------
 
 data Options = Options
@@ -64,13 +70,23 @@ runOptions fp opts
     p <- parseIO fp stmts_parse s
     case p of
       Nothing -> return ()
-      Just ast   -> if
-        | optAST opts       -> print ast
-        | optPrint opts     -> mapM_ putStrLn (map renderStmt ast)
-        -- | optLinux opts     -> Compile Linux
+      Just asts   -> if
+        | optAST opts       -> print asts
+        | optPrint opts     -> mapM_ putStrLn (map renderStmt asts)
+        | optLinux opts     -> do runOrFail (compileMacro asts 'l')
+                                  return ()
         -- | optWindows opts   -> Compile Windows
         -- | otherwise         -> Compile Linux
-        | otherwise         -> print ast
+        | otherwise         -> print asts
+
+runOrFail :: KM a -> IO a
+runOrFail m = do
+  r <- runKM m
+  case r of
+    Left err -> do
+      liftIO $ hPrint stderr err
+      exitWith (ExitFailure 1)
+    Right v -> return v
 
 parseIO :: String -> (String -> ParseResult a) -> String -> IO (Maybe a)
 parseIO f p x = case p x of
@@ -78,3 +94,6 @@ parseIO f p x = case p x of
     putStrLn (f ++ ": " ++ e)
     return Nothing
   Ok r -> return (Just r)
+
+compileMacro :: MonadKM m => [Stmt Tm] -> Char -> m ()
+compileMacro xs m = return ()

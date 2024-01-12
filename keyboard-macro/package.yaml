@@ -46,6 +46,7 @@ default-extensions:
 - StandaloneDeriving
 - PatternSynonyms
 - FlexibleInstances
+- FlexibleContexts
 - TupleSections
 - MultiWayIf
 

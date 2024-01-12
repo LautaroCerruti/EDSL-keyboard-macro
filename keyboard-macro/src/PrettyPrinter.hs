@@ -7,6 +7,15 @@ import           Prelude                 hiding ( (<>) )
 tabW :: Int
 tabW = 2
 
+isKeyOrVar :: Tm -> Bool
+isKeyOrVar (Key _) = True
+isKeyOrVar (Var _) = True
+isKeyOrVar _ = False
+
+parensIf :: Bool -> Doc -> Doc
+parensIf True  = parens
+parensIf False = id
+
 pSK :: SpecialKey -> Doc
 pSK (Fkey n)= text "F" <> int n
 pSK k = text (show k)
@@ -20,10 +29,15 @@ pTm (Var n)        = text n
 pTm (Key k)        = pK k
 pTm (Usleep n)     = text "usleep" <+> int n
 pTm (Sleep n)      = text "sleep" <+> int n
-pTm (While k t)    = pK k <+> text "+" <+> parens (pTm t)
-pTm (Repeat n t)   = text "repeat" <+> int n <+> parens (pTm t)
+pTm (While k t)    = pK k <> text "+" <> parensIf (not (isKeyOrVar t)) (pTm t)
+pTm (Repeat n t)   = 
+    text "repeat" 
+        <+> int n 
+        <+> lparen 
+        $$ nest tabW (pTm t) 
+        $$ rparen
 pTm (Line l)       = text "line \"" <> text l <> text "\""
-pTm (Seq a b)      = pTm a <+> semi <+> pTm b
+pTm (Seq a b)      = pTm a <> semi <+> pTm b
 
 pStmt :: Stmt Tm -> Doc
 pStmt (Def name t) = text "def" <+> text name <+> text "=" <+> pTm t

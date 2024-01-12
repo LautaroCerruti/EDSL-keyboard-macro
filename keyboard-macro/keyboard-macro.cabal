@@ -26,6 +26,8 @@ source-repository head
 library
   exposed-modules:
       Common
+      Error
+      MonadKM
       Parse
       PrettyPrinter
   other-modules:
@@ -39,6 +41,7 @@ library
       StandaloneDeriving
       PatternSynonyms
       FlexibleInstances
+      FlexibleContexts
       TupleSections
       MultiWayIf
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
@@ -67,6 +70,7 @@ executable keyboard-macro-exe
       StandaloneDeriving
       PatternSynonyms
       FlexibleInstances
+      FlexibleContexts
       TupleSections
       MultiWayIf
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
@@ -99,6 +103,7 @@ test-suite keyboard-macro-test
       StandaloneDeriving
       PatternSynonyms
       FlexibleInstances
+      FlexibleContexts
       TupleSections
       MultiWayIf
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
