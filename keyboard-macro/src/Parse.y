@@ -6,7 +6,7 @@ import Data.Char
 }
 
 %monad { P } { thenP } { returnP }
-%name parseStmts Defs
+%name parseProg Prog
 
 %tokentype { Token }
 %lexer {lexer} {TEOF}
@@ -18,7 +18,6 @@ import Data.Char
     '('         { TOpen }
     ')'         { TClose }
     DEF         { TDef }
-    MACRO       { TMacro }
     REPEAT      { TRepeat }
     SLEEP       { TSleep }
     USLEEP      { TUSleep }
@@ -59,7 +58,6 @@ import Data.Char
 %%
 
 Def     :  DEF STRING '=' Macro         { Def $2 $4 }
-        |  MACRO STRING '=' Macro       { Macro $2 $4 }
 
 Macro   :: { Tm }
         : Macro ';' Macro                { Seq $1 $3}
@@ -107,6 +105,8 @@ Special :: { SpecialKey }
 Defs    : Def Defs                      { $1 : $2 }
         |                               { [] }
 
+Prog    :: { Prog }
+        : Defs Macro                    { Prog $1 $2}
 {
 
 data ParseResult a = Ok a | Failed String
@@ -147,7 +147,6 @@ data Token = TString String
                | TClose 
                | TSemicolon
                | TEquals
-               | TMacro
                | TRepeat
                | TSleep
                | TUSleep
@@ -198,7 +197,6 @@ lexer cont s = case s of
                      "Línea "++(show line)++": No se puede reconocer "++(show $ take 10 unknown)++ "..."
                     where lexVar cs = case span isAlpha cs of
                               ("def",rest)  -> cont TDef rest
-                              ("macro",rest)  -> cont TMacro rest
                               ("line",(' ':('\"':rest)))  -> if elem '\"' rest then cont (TLine (takeTillChar '\"' rest)) (dropTillChar '\"' rest) else \ line -> Failed $ "Línea "++(show line)++": Unmatched \""
                               ("repeat",rest)  -> cont TRepeat rest
                               ("sleep",rest)  -> cont TSleep rest
@@ -252,5 +250,5 @@ lexer cont s = case s of
                           takeTillChar c (f:rest) = if (c == f) then [] else f : (takeTillChar c rest)
                           dropTillChar c (f:rest) = if (c == f) then rest else dropTillChar c rest
 
-stmts_parse s = parseStmts s 1
+prog_parse s = parseProg s 1
 }

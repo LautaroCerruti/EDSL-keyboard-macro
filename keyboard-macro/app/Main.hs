@@ -67,17 +67,17 @@ runOptions fp opts
   | optHelp opts = putStrLn (usageInfo "Uso: " options)
   | otherwise = do
     s <- readFile fp
-    p <- parseIO fp stmts_parse s
+    p <- parseIO fp prog_parse s
     case p of
       Nothing -> return ()
-      Just asts   -> if
-        | optAST opts       -> print asts
-        | optPrint opts     -> mapM_ putStrLn (map renderStmt asts)
-        | optLinux opts     -> do runOrFail (compileMacro asts 'l')
+      Just ast   -> if
+        | optAST opts       -> print ast
+        | optPrint opts     -> putStrLn (renderProg ast)
+        | optLinux opts     -> do runOrFail (compileMacro ast 'l')
                                   return ()
         -- | optWindows opts   -> Compile Windows
         -- | otherwise         -> Compile Linux
-        | otherwise         -> print asts
+        | otherwise         -> print ast
 
 runOrFail :: KM a -> IO a
 runOrFail m = do
@@ -95,5 +95,5 @@ parseIO f p x = case p x of
     return Nothing
   Ok r -> return (Just r)
 
-compileMacro :: MonadKM m => [Stmt Tm] -> Char -> m ()
+compileMacro :: MonadKM m => Prog -> Char -> m ()
 compileMacro xs m = return ()

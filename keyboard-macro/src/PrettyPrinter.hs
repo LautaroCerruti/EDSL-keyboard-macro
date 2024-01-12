@@ -39,9 +39,11 @@ pTm (Repeat n t)   =
 pTm (Line l)       = text "line \"" <> text l <> text "\""
 pTm (Seq a b)      = pTm a <> semi <+> pTm b
 
-pStmt :: Stmt Tm -> Doc
-pStmt (Def name t) = text "def" <+> text name <+> text "=" <+> pTm t
-pStmt (Macro name t) = text "macro" <+> text name <+> text "=" <+> pTm t
+pDef :: Def Tm -> Doc
+pDef (Def name t) = text "def" <+> text name <+> text "=" <+> pTm t
 
-renderStmt :: Stmt Tm -> String
-renderStmt = render . pStmt
+pProg :: Prog -> Doc
+pProg (Prog defs t) = (vcat (map pDef defs)) $$ (text "\n\n-- Macro:\n" <> pTm t)
+
+renderProg :: Prog -> String
+renderProg = render . pProg

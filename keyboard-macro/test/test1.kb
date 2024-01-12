@@ -16,3 +16,6 @@ def plus = ALT + (k + repeat 2 u)
 
 def testingds = CONTROL+c;CONTROL+v;CONTROL+(c;d)
 def asd = usleep 2; sleep 8
+
+--Macro:
+asd;test;repeat 3 (megatest;plus)

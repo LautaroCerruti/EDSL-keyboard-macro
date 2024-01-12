@@ -1,19 +1,16 @@
 module Common where
 
-    -- Comandos de archivos
-    data Stmt i = Def Name i
-                | Macro Name i
+    data Prog = Prog [Def Tm] Tm
+        deriving Show
+    
+    data Def i = Def Name i
         deriving (Show)
 
-    instance Functor Stmt where
+    instance Functor Def where
         fmap f (Def s i) = Def s (f i)
-        fmap f (Macro s i)  = Macro s (f i)
 
     -- Tipos de los nombres
     type Name = String
-
-    -- Entornos
-    type NameEnv v = [(Name, v)]
 
     data Tm = 
           Var Name
@@ -38,7 +35,7 @@ module Common where
         deriving Show
 
     data GlEnv = GlEnv {
-            glb :: [Stmt Tm]  -- ^ Entorno con las variables definidas
+            glb :: [Def Tm]  -- ^ Entorno con las variables definidas
         }   
 
     -- | Valor del estado inicial

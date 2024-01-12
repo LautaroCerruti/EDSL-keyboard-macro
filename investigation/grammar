@@ -1,16 +1,21 @@
-Exp     : def VAR = Macro
-        | macro STRING = Macro
+Prog    : Defs Macro
+
+Defs    : Def Defs
+
+Def     : def VAR = Macro
 
 Macro   : Macro;Macro
         | line STRING
-        | repeat INT (Macro)
-        | key+(Macro)
+        | repeat INT Macro
+        | Key+Macro
         | sleep INT
         | usleep INT
         | Key
-        | use VAR
+        | VAR
+        | (Macro)
 
 Key     : CHAR
+        | INT
         | Special
 
 special : LARROW | UARROW | DARROW | RARROW
