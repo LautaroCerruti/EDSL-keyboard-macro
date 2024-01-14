@@ -96,4 +96,6 @@ parseIO f p x = case p x of
   Ok r -> return (Just r)
 
 compileMacro :: MonadKM m => Prog -> Char -> m ()
-compileMacro xs m = return ()
+compileMacro (Prog xs p) m = do 
+                      mapM_ addDef xs
+                      return ()

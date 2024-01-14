@@ -1,14 +1,7 @@
-#include <X11/Xlib.h>
-#include <X11/XKBlib.h>
-#include <X11/extensions/XTest.h>
-#include <X11/keysym.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
-#include <ctype.h>
+#include "macro_linux.hpp"
 
 // Compile with:
-// gcc -o generate_key test2.cpp -lX11 -lXtst -lX11-xcb
+// gcc -c -o macro_linux.o macro_linux.cpp -lX11 -lXtst -lX11-xcb
 
 Display *display;
 
@@ -81,7 +74,7 @@ void pressLine(const char *str) {
     }
 }
 
-int main() {
+int startMain() {
     display = XOpenDisplay(NULL);
     if (!display) {
         fprintf(stderr, "Unable to open display\n");
@@ -99,33 +92,5 @@ int main() {
         printf("Caps Lock is off.\n");
     }
 
-    // ---------------------------------------------------
-
-	sleep(5);
-
-    // Press and release 'A' key
-    // pressKey(XK_A);
-    // releaseKey(XK_A);
-    // for (int i = 0; i < 3; ++i) {
-    //     const char *textToType = "estoy haciendo el programa que tipea en linux y soy re basado (esto lo escribi con el programa xd)\n";
-    //     pressLine(textToType);
-    // }
-
-    pressKey(XK_Control_L);
-    upperOrLowerPress('a');
-    releaseKey(XK_Control_L);
-    pressKey(XK_Control_L);
-    upperOrLowerPress('c');
-    releaseKey(XK_Control_L);
-    pressAndReleaseKey(XK_Right);
-    pressAndReleaseKey(XK_Return);
-    pressAndReleaseKey(XK_Return);
-    pressKey(XK_Control_L);
-    upperOrLowerPress('v');
-    releaseKey(XK_Control_L);
-
-    // ---------------------------------------------------
-
-    XCloseDisplay(display);
     return 0;
 }
