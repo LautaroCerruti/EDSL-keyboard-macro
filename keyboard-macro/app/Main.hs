@@ -98,4 +98,20 @@ parseIO f p x = case p x of
 compileMacro :: MonadKM m => Prog -> Char -> m ()
 compileMacro (Prog xs p) m = do 
                       mapM_ addDef xs
+                      plainP <- plainProg p
                       return ()
+
+plainProg :: MonadKM m => Tm -> m Tm
+plainProg (Var n) = do 
+                      def <- lookupDef n
+                      case def of
+                        Just fdef -> do 
+                                      def' <- plainProg fdef
+                                      return def'
+                        Nothing -> failKM ("Undefined def " ++ n ++ "\n")
+plainProg (While k t) = While k <$> (plainProg t)
+plainProg (Repeat i t) = Repeat i <$> (plainProg t)
+plainProg (Seq t1 t2) = do t1' <- plainProg t1
+                           t2' <- plainProg t2
+                           return (Seq t1' t2')
+plainProg t = return t
