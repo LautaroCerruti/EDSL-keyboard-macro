@@ -18,4 +18,4 @@ def testingds = CONTROL+c;CONTROL+v;CONTROL+(c;d)
 def asd = usleep 2; sleep 8
 
 --Macro:
-asd;test;repeat 3 (megatest;plus)
+asd;test;repeat 3 (megaTest;plus)

@@ -8,6 +8,7 @@ import           PrettyPrinter
 import System.Exit ( exitWith, ExitCode(ExitFailure) )
 import System.IO ( hPrint, stderr )
 import Common
+import C ( prog2C )
 
 import           MonadKM
 
@@ -38,11 +39,11 @@ options =
            "Mostrar el AST del programa de entrada."
   , Option ['l']
            ["linux"]
-           (NoArg (\opts -> opts { optAST = True }))
+           (NoArg (\opts -> opts { optLinux = True }))
            "Compilar para Linux"
   , Option ['w']
            ["windows"]
-           (NoArg (\opts -> opts { optAST = True }))
+           (NoArg (\opts -> opts { optWindows = True }))
            "Compilar para Windows"
   , Option ['h']
            ["help"]
@@ -99,6 +100,7 @@ compileMacro :: MonadKM m => Prog -> Char -> m ()
 compileMacro (Prog xs p) m = do 
                       mapM_ addDef xs
                       plainP <- plainProg p
+                      printKM (prog2C m plainP)
                       return ()
 
 plainProg :: MonadKM m => Tm -> m Tm
@@ -108,7 +110,7 @@ plainProg (Var n) = do
                         Just fdef -> do 
                                       def' <- plainProg fdef
                                       return def'
-                        Nothing -> failKM ("Undefined def " ++ n ++ "\n")
+                        Nothing -> failKM ("Undefined def " ++ n)
 plainProg (While k t) = While k <$> (plainProg t)
 plainProg (Repeat i t) = Repeat i <$> (plainProg t)
 plainProg (Seq t1 t2) = do t1' <- plainProg t1

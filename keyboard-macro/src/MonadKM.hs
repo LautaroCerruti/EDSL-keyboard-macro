@@ -4,6 +4,7 @@ module MonadKM (
   failKM,
   addDef,
   lookupDef,
+  printKM,
   MonadKM,
   module Control.Monad.Except,
   module Control.Monad.State)
@@ -29,6 +30,9 @@ lookupDef name = do
 
 failKM :: MonadKM m => String -> m a
 failKM s = throwError (Error s)
+
+printKM :: MonadKM m => String -> m ()
+printKM = liftIO . putStrLn
 
 type KM = StateT GlEnv (ExceptT Error IO)
 
