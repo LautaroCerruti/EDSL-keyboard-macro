@@ -23,10 +23,16 @@ pSK k = text (show k)
 pK :: Key -> Doc
 pK (NKey k) = char k
 pK (SKey k) = pSK k
+pK (MouseButton n) = case n of 
+                        1 -> text "LMB"
+                        2 -> text "MMB"
+                        3 -> text "RMB"
+                        _ -> empty
 
 pTm :: Tm -> Doc
 pTm (Var n)        = text n
 pTm (Key k)        = pK k
+pTm (Mouse x y)    = text "mouse" <+> int x <+> int y
 pTm (Usleep n)     = text "usleep" <+> int n
 pTm (Sleep n)      = text "sleep" <+> int n
 pTm (While k t)    = pK k <> text "+" <> parensIf (not (isKeyOrVar t)) (pTm t)

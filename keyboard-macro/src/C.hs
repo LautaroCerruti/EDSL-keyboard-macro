@@ -7,6 +7,10 @@ import           Prelude                 hiding ( (<>) )
 tabW :: Int
 tabW = 2
 
+isButton :: Key -> Bool
+isButton (MouseButton _) = True
+isButton _ = False
+
 skey2StringLinux :: SpecialKey -> String
 skey2StringLinux (LARROW) = "XK_Left"
 skey2StringLinux (UARROW) = "XK_Up"
@@ -37,6 +41,7 @@ skey2StringLinux (Fkey i) = "XK_F" ++ (show i)
 key2DocLinux :: Key -> Doc
 key2DocLinux (NKey k) = char '\'' <> char k <> char '\''
 key2DocLinux (SKey k) = text (skey2StringLinux k)
+key2DocLinux (MouseButton n) = int n
 
 key2DocWindows :: Key -> Doc
 key2DocWindows k = empty
@@ -79,7 +84,9 @@ tm2Doc c p = case c of
             where 
                 go :: (Key -> Doc) -> Tm -> Int -> Doc
                 go _ (Var _) _ = empty
+                go f (Key k@(MouseButton n)) _ = text "pressAndReleaseButton(" <> f k <> text ");"
                 go f (Key k) _ = text "pressAndReleaseKey(" <> f k <> text ");"
+                go _ (Mouse x y) _ = text "moveMouse(" <> int x <> text ", " <> int y <> text ");"
                 go _ (Usleep n) _ = text "usleep(" <> int n <> text ");"
                 go _ (Sleep n) _ = text "sleep(" <> int n <> text ");"
                 go _ (Line str) _ = 
@@ -91,11 +98,11 @@ tm2Doc c p = case c of
                     $$ rbrace
                 go f (While k tm) i = let ktext = f k in 
                                             if (c == 'l') then
-                                                   text "pressKey(" 
+                                                   (if isButton k then text "pressButton(" else text "pressKey(")
                                                 <> ktext 
                                                 <> text ");" 
                                                 $$ go f tm i
-                                                $$ text "releaseKey(" 
+                                                $$ (if isButton k then text "releaseButton(" else text "releaseKey(")
                                                 <> ktext 
                                                 <> text ");" 
                                             else empty

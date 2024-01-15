@@ -74,6 +74,35 @@ void pressLine(const char *str) {
     }
 }
 
+void moveMouse(int x, int y) {
+    XWarpPointer(display, None, DefaultRootWindow(display), 0, 0, 0, 0, x, y);
+    XFlush(display);
+}
+
+/*
+    Given a button press it and dont release it
+*/
+void pressButton(int button) {
+    XTestFakeButtonEvent(display, button, True, 0);
+    XFlush(display);
+}
+
+/*
+    Given a button, release it
+*/
+void releaseButton(int button) {
+    XTestFakeButtonEvent(display, button, False, 0);
+    XFlush(display);
+}
+
+/*
+    Press a button one time
+*/
+void pressAndReleaseButton (int button) {
+    pressButton(button);
+    releaseButton(button);
+}
+
 int startMain() {
     display = XOpenDisplay(NULL);
     if (!display) {

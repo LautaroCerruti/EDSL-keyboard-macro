@@ -11,7 +11,7 @@
 #include <ctype.h>
 
 // Compile with:
-// gcc -o generate_key test2.cpp -lX11 -lXtst -lX11-xcb
+// gcc -c -o macro_linux.o macro_linux.cpp -lX11 -lXtst -lX11-xcb
 
 extern Display *display;
 
@@ -50,6 +50,23 @@ void upperOrLowerPress (char key);
     Press a series of keys corresponding to an array of char
 */
 void pressLine(const char *str);
+
+void moveMouse(int x, int y);
+
+/*
+    Given a button press it and dont release it
+*/
+void pressButton(int button);
+
+/*
+    Given a button, release it
+*/
+void releaseButton(int button);
+
+/*
+    Press a button one time
+*/
+void pressAndReleaseButton (int button);
 
 int startMain();
 
