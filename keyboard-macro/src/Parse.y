@@ -21,8 +21,10 @@ import Data.Char
     REPEAT      { TRepeat }
     SLEEP       { TSleep }
     USLEEP      { TUSleep }
+    MOUSE       { TMouse }
     CHAR        { TChar $$ }
     INT         { TInt $$ }
+    MBUTTON     { TMButton $$ }
     STRING      { TString $$ }
     LINE        { TLine $$ }
     LARROW      { TLARROW }
@@ -66,6 +68,7 @@ Macro   :: { Tm }
         | Key '+' Macro                 { While $1 $3 }
         | SLEEP INT                     { Sleep $2 }
         | USLEEP INT                    { Usleep $2 }
+        | MOUSE INT INT                 { Mouse $2 $3 }
         | STRING                        { Var $1 }
         | Key                           { Key $1 }
         | '(' Macro ')'                 { $2 }
@@ -73,6 +76,7 @@ Macro   :: { Tm }
 Key     :: { Key }
         : CHAR                          { NKey $1 }
         | INT                           { NKey (head (show $1))}
+        | MBUTTON                       { MouseButton $1 }
         | Special                       { SKey $1 }
 
 Special :: { SpecialKey }
@@ -141,7 +145,9 @@ data Token = TString String
                | TChar Char
                | TLine String
                | TFKey Int
+               | TMButton Int
                | TDef
+               | TMouse
                | TOpen
                | TPLus
                | TClose 
@@ -201,6 +207,10 @@ lexer cont s = case s of
                               ("repeat",rest)  -> cont TRepeat rest
                               ("sleep",rest)  -> cont TSleep rest
                               ("usleep",rest) -> cont TUSleep rest
+                              ("mouse",rest) -> cont TMouse rest
+                              ("LMB", rest) -> cont (TMButton 1) rest 
+                              ("MMB", rest) -> cont (TMButton 2) rest 
+                              ("RMB", rest) -> cont (TMButton 3) rest 
                               ("LARROW", rest) -> cont TLARROW rest 
                               ("UARROW", rest) -> cont TUARROW rest 
                               ("DARROW", rest) -> cont TDARROW rest 

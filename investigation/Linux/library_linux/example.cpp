@@ -10,28 +10,22 @@ int main() {
 
     // ---------------------------------------------------
 
-	sleep(5);
-
-    // Press and release 'A' key
-    // pressKey(XK_A);
-    // releaseKey(XK_A);
-    // for (int i = 0; i < 3; ++i) {
-    //     const char *textToType = "estoy haciendo el programa que tipea en linux y soy re basado (esto lo escribi con el programa xd)\n";
-    //     pressLine(textToType);
-    // }
-
-    pressKey(XK_Control_L);
-    upperOrLowerPress('a');
-    releaseKey(XK_Control_L);
-    pressKey(XK_Control_L);
-    upperOrLowerPress('c');
-    releaseKey(XK_Control_L);
-    pressAndReleaseKey(XK_Right);
-    pressAndReleaseKey(XK_Return);
-    pressAndReleaseKey(XK_Return);
-    pressKey(XK_Control_L);
-    upperOrLowerPress('v');
-    releaseKey(XK_Control_L);
+    pressAndReleaseButton(1);
+    sleep(1);
+    sleep(1);
+	moveMouse(200, 200);
+    sleep(1);
+	moveMouse(300, 300);
+    sleep(1);
+	moveMouse(400, 400);
+    sleep(1);
+	moveMouse(500, 500);
+    sleep(1);
+	moveMouse(600, 600);
+    sleep(1);
+	moveMouse(700, 700);
+    sleep(1);
+	moveMouse(800, 800);
 
     // ---------------------------------------------------
 

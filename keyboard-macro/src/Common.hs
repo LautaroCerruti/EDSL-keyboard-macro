@@ -21,9 +21,10 @@ module Common where
         | Repeat Int Tm
         | Line String
         | Seq Tm Tm
+        | Mouse Int Int
         deriving Show
 
-    data Key = NKey Char | SKey SpecialKey
+    data Key = NKey Char | SKey SpecialKey | MouseButton Int
         deriving Show
 
     data SpecialKey = LARROW | UARROW | DARROW | RARROW
