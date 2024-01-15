@@ -23,7 +23,7 @@ module Common where
         | Seq Tm Tm
         deriving Show
 
-    data Key = NKey Char | Skey SpecialKey
+    data Key = NKey Char | SKey SpecialKey
         deriving Show
 
     data SpecialKey = LARROW | UARROW | DARROW | RARROW

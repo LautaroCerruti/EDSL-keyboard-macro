@@ -22,7 +22,7 @@ pSK k = text (show k)
 
 pK :: Key -> Doc
 pK (NKey k) = char k
-pK (Skey k) = pSK k
+pK (SKey k) = pSK k
 
 pTm :: Tm -> Doc
 pTm (Var n)        = text n

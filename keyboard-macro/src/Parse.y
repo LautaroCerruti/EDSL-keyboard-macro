@@ -73,7 +73,7 @@ Macro   :: { Tm }
 Key     :: { Key }
         : CHAR                          { NKey $1 }
         | INT                           { NKey (head (show $1))}
-        | Special                       { Skey $1 }
+        | Special                       { SKey $1 }
 
 Special :: { SpecialKey }
         : LARROW                        { LARROW }
@@ -214,6 +214,7 @@ lexer cont s = case s of
                               ("ESC", rest) -> cont TESC rest 
                               ("SPACE", rest) -> cont TSPACE rest 
                               ("CONTROL", rest) -> cont TCONTROL rest 
+                              ("CTRL", rest) -> cont TCONTROL rest 
                               ("LCONTROL", rest) -> cont TLCONTROL rest 
                               ("RCONTROL", rest) -> cont TRCONTROL rest 
                               ("ALT", rest) -> cont TALT rest 
