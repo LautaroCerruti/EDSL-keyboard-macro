@@ -4,16 +4,17 @@ import           Parse
 import           System.Console.GetOpt
 import qualified System.Environment            as Env
 import           PrettyPrinter
+import System.Environment (lookupEnv)
 
-import System.Exit ( exitWith, ExitCode(ExitFailure) )
+import System.Exit ( exitWith )
 import System.IO ( hPrint, stderr, hGetContents)
 import System.FilePath (dropExtension)
-import System.Directory ( getCurrentDirectory )
+import System.Directory ( getCurrentDirectory, removeFile )
+import System.Info (os)
 import Common
 import C ( prog2C )
 import System.Process
 import System.Exit (ExitCode(..))
-
 
 import           MonadKM
 
@@ -72,6 +73,16 @@ finalOptions argv = case getOpt Permute options argv of
   (_, _, errs) -> ioError (userError (concat errs ++ usageInfo header options))
   where header = "Uso:"
 
+isX11 :: IO Bool
+isX11 = do
+    maybeX11 <- lookupEnv "XDG_SESSION_TYPE"
+    case maybeX11 of
+        Just "x11"  -> return True
+        _ -> return False
+
+isWindows :: Bool
+isWindows = os == "mingw32" || os == "mingw64" || os == "cygwin"
+
 main :: IO ()
 main = do
   s : opts   <- Env.getArgs
@@ -82,6 +93,9 @@ runOptions :: FilePath -> Options -> IO ()
 runOptions fp opts
   | optHelp opts = putStrLn (usageInfo "Uso: " options)
   | otherwise = do
+    x11 <- liftIO isX11
+    if ((optWindows opts) && (not isWindows)) then putStrLn "Can't compile for windows while running in another SO" >>= (\_ -> exitWith (ExitFailure 1)) else return ()
+    if ((optLinux opts) && (not x11)) then putStrLn "Can't compile for linux, only if X11 is the window handler" >>= (\_ -> exitWith (ExitFailure 1)) else return ()
     s <- readFile fp
     p <- parseIO fp prog_parse s
     case p of
@@ -89,21 +103,18 @@ runOptions fp opts
       Just ast   -> if
         | optAST opts       -> print ast
         | optPrint opts     -> putStrLn (renderProg ast)
-        | optLinux opts     -> do runOrFail (compileMacro ast 'l' fp)
-                                  return ()
-        | optWindows opts   -> do runOrFail (compileMacro ast 'w' fp)
-                                  return ()
-        | otherwise         -> do runOrFail (compileMacro ast 'l' fp)
-                                  return ()
+        | optCCode opts     -> runOrFail (compileMacro ast opts fp)
+        | optExe opts       -> runOrFail (compileMacro ast opts fp)
+        | otherwise         -> return ()
 
-runOrFail :: KM a -> IO a
+runOrFail :: KM a -> IO ()
 runOrFail m = do
   r <- runKM m
   case r of
     Left err -> do
       liftIO $ hPrint stderr err
       exitWith (ExitFailure 1)
-    Right v -> return v
+    Right _ -> return ()
 
 parseIO :: String -> (String -> ParseResult a) -> String -> IO (Maybe a)
 parseIO f p x = case p x of
@@ -112,27 +123,26 @@ parseIO f p x = case p x of
     return Nothing
   Ok r -> return (Just r)
 
-compileMacro :: MonadKM m => Prog -> Char -> FilePath -> m ()
-compileMacro (Prog xs p) m fp = do 
+compileMacro :: MonadKM m => Prog -> Options -> FilePath -> m ()
+compileMacro (Prog xs p) opts fp = do 
                                   mapM_ addDef xs
                                   plainP <- plainProg p
                                   cd <- liftIO getCurrentDirectory
+                                  m <- return (if optLinux opts then 'l' else 'w')
                                   ccode <- return (prog2C cd m plainP)
                                   printKM ccode
                                   let cname = (dropExtension fp ++ ".cpp")
                                   liftIO $ writeFile cname ccode
-                                  liftIO $ c2exe m cname cd
+                                  if (optExe opts) then liftIO $ c2exe m cname cd else return ()
+                                  if (not (optCCode opts)) then liftIO $ removeFile cname else return ()
                                   return ()
 
 c2exe :: Char -> FilePath -> FilePath -> IO ()
 c2exe m fp cd = do
     let params = if (m == 'l') then [fp, "-o", (dropExtension fp), cd ++ "/src/linux_c/macro_linux.o", "-lX11", "-lXtst", "-lX11-xcb"]
                                else [fp, "-o", (dropExtension fp ++ ".exe"), cd ++ "/src/windows_c/macro_windows.o", "-lstdc++"]
-
-    (_, Just hout, Just herr, ph) <- createProcess (proc "gcc" params){ std_out = CreatePipe, std_err = CreatePipe }
-
+    (_, Just _, Just herr, ph) <- createProcess (proc "gcc" params){ std_out = CreatePipe, std_err = CreatePipe }
     exitCode <- waitForProcess ph
-
     case exitCode of
         ExitSuccess   -> putStrLn "Compilation successful"
         ExitFailure _ -> do
