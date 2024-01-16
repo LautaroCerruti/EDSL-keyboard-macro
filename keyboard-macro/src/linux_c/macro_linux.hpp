@@ -12,6 +12,8 @@
 
 // Compile with:
 // gcc -c -o macro_linux.o macro_linux.cpp -lX11 -lXtst -lX11-xcb
+// Compile files in Linux with:
+// gcc -o NAME NAME.cpp macro_linux.o -lX11 -lXtst -lX11-xcb
 
 extern Display *display;
 

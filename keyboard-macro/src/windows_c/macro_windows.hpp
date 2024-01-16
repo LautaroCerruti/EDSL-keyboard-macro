@@ -15,8 +15,10 @@
 
 using namespace std;
 
-// Compile with:
+// Compile .o with:
 // gcc -c -o macro_windows.o macro_windows.cpp -Wno-deprecated-declarations
+// Compile files in Windows with:
+// gcc -o NAME.exe NAME.cpp macro_windows.o -lstdc++
 
 void pressKey(INPUT* ip, WORD key);
 /*

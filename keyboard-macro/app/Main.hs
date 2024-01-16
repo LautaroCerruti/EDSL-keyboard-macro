@@ -6,7 +6,9 @@ import qualified System.Environment            as Env
 import           PrettyPrinter
 
 import System.Exit ( exitWith, ExitCode(ExitFailure) )
-import System.IO ( hPrint, stderr )
+import System.IO ( hPrint, stderr)
+import System.FilePath (dropExtension)
+import System.Directory ( getCurrentDirectory )
 import Common
 import C ( prog2C )
 
@@ -74,11 +76,11 @@ runOptions fp opts
       Just ast   -> if
         | optAST opts       -> print ast
         | optPrint opts     -> putStrLn (renderProg ast)
-        | optLinux opts     -> do runOrFail (compileMacro ast 'l')
+        | optLinux opts     -> do runOrFail (compileMacro ast 'l' fp)
                                   return ()
-        | optWindows opts   -> do runOrFail (compileMacro ast 'w')
+        | optWindows opts   -> do runOrFail (compileMacro ast 'w' fp)
                                   return ()
-        | otherwise         -> do runOrFail (compileMacro ast 'l')
+        | otherwise         -> do runOrFail (compileMacro ast 'l' fp)
                                   return ()
 
 runOrFail :: KM a -> IO a
@@ -97,12 +99,15 @@ parseIO f p x = case p x of
     return Nothing
   Ok r -> return (Just r)
 
-compileMacro :: MonadKM m => Prog -> Char -> m ()
-compileMacro (Prog xs p) m = do 
-                      mapM_ addDef xs
-                      plainP <- plainProg p
-                      printKM (prog2C m plainP)
-                      return ()
+compileMacro :: MonadKM m => Prog -> Char -> FilePath -> m ()
+compileMacro (Prog xs p) m fp = do 
+                                  mapM_ addDef xs
+                                  plainP <- plainProg p
+                                  filepath <- liftIO getCurrentDirectory
+                                  ccode <- return (prog2C filepath m plainP)
+                                  printKM ccode
+                                  liftIO $ writeFile (dropExtension fp ++ ".cpp") ccode
+                                  return ()
 
 plainProg :: MonadKM m => Tm -> m Tm
 plainProg (Var n) = do 

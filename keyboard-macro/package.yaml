@@ -27,6 +27,8 @@ dependencies:
 - haskeline >= 0.8.0.0
 - mtl
 - exceptions
+- filepath
+- directory
 - strict
 - QuickCheck
 

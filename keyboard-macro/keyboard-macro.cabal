@@ -51,7 +51,9 @@ library
     , array
     , base >=4.7 && <5
     , containers
+    , directory
     , exceptions
+    , filepath
     , haskeline >=0.8.0.0
     , mtl
     , pretty
@@ -82,7 +84,9 @@ executable keyboard-macro-exe
     , array
     , base >=4.7 && <5
     , containers
+    , directory
     , exceptions
+    , filepath
     , haskeline >=0.8.0.0
     , keyboard-macro
     , mtl
@@ -115,7 +119,9 @@ test-suite keyboard-macro-test
     , array
     , base >=4.7 && <5
     , containers
+    , directory
     , exceptions
+    , filepath
     , haskeline >=0.8.0.0
     , keyboard-macro
     , mtl

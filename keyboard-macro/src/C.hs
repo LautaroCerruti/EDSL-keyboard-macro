@@ -82,28 +82,28 @@ key2DocWindows (MouseButton n) = int n
 line :: Doc
 line = text "\n"
 
-preludeLinux :: Doc
-preludeLinux = text "#include \"macro_linux.hpp\""
-            $$ text "int main() {"
-            $$ nest tabW (
-                    text "if (startMain()) { // returns 1 if it failed"
-                    $$ nest tabW (text "return 1;")
-                    $$ text "}"
-                    <> line
-            )
+preludeLinux :: FilePath -> Doc
+preludeLinux fp =  text "#include \"" <> text fp <> text "/src/linux_c/macro_linux.hpp\""
+                $$ text "int main() {"
+                $$ nest tabW (
+                        text "if (startMain()) { // returns 1 if it failed"
+                        $$ nest tabW (text "return 1;")
+                        $$ text "}"
+                        <> line
+                )
 
-preludeWindows :: Doc
-preludeWindows = text "#include \"macro_windows.hpp\""
-            $$ text "int main() {"
-            $$ nest tabW (
-                    text "startMain();"
-                    <> line
-            )
+preludeWindows :: FilePath -> Doc
+preludeWindows fp =    text "#include \"" <> text fp <> text "/src/windows_c/macro_windows.hpp\""
+                    $$ text "int main() {"
+                    $$ nest tabW (
+                            text "startMain();"
+                            <> line
+                    )
 
-prelude :: Char -> Doc
-prelude ('l') = preludeLinux
-prelude ('w') = preludeWindows
-prelude _ = empty
+prelude :: FilePath -> Char -> Doc
+prelude fp ('l') = preludeLinux fp
+prelude fp ('w') = preludeWindows fp
+prelude _ _ = empty
 
 closeMainLinux :: Doc
 closeMainLinux = nest tabW (
@@ -210,5 +210,5 @@ tm2Doc c p = case c of
                 'w' -> tm2DocWindows p 0
                 _   -> empty
 
-prog2C :: Char -> Tm -> String
-prog2C m t = render (vcat [prelude m, nest tabW (tm2Doc m t), closeMain m])
+prog2C :: FilePath -> Char -> Tm -> String
+prog2C fp m t = render (vcat [prelude fp m, nest tabW (tm2Doc m t), closeMain m])
