@@ -1,17 +1,31 @@
 #include "macro_windows.hpp"
 
+void pressKey(INPUT* ip, WORD key) {
+    ip->type = INPUT_KEYBOARD;
+    ip->ki.wScan = 0; // hardware scan code for key
+    ip->ki.time = 0;
+    ip->ki.dwExtraInfo = 0;
+
+    // Press the key
+    ip->ki.wVk = key;
+    ip->ki.dwFlags = 0; // 0 for key press
+    SendInput(1, ip, sizeof(INPUT));
+}
+
+
 /*
     Given an INPUT and a key press that key and dont release it, 
     commonly used for SHIFT, CTRL or WINDOWS
 */
-void pressKey (INPUT* ip, char key) {
+void pressKeyChar(INPUT* ip, char key) {
     // Set up a generic keyboard event.
     ip->type = INPUT_KEYBOARD;
     ip->ki.wScan = 0; // hardware scan code for key
     ip->ki.time = 0;
     ip->ki.dwExtraInfo = 0;
     // Press the key
-    ip->ki.wVk = key; 
+    SHORT vkCode = VkKeyScan(key);
+    ip->ki.wVk = LOBYTE(vkCode);
     ip->ki.dwFlags = 0; // 0 for key press
     SendInput(1, ip, sizeof(INPUT));
 }
@@ -19,7 +33,7 @@ void pressKey (INPUT* ip, char key) {
 /*
     Given an INPUT release it
 */
-void releaseKey (INPUT* ip) {
+void releaseKey(INPUT* ip) {
     ip->ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
     SendInput(1, ip, sizeof(INPUT));
 }
@@ -27,19 +41,28 @@ void releaseKey (INPUT* ip) {
 /*
     Press a key one time
 */
-void pressAndReleaseKey (char key) {
+void pressAndReleaseKey(WORD key) {
     INPUT ip;
     pressKey(&ip, key);
     releaseKey(&ip);
 }
 
 /*
+    Press a key one time
+*/
+void pressAndReleaseKeyChar(char key) {
+    INPUT ip;
+    pressKeyChar(&ip, key);
+    releaseKey(&ip);
+}
+
+/*
     Press a key while holding shift
 */
-void pressShiftPLusKey (char key) {
+void pressShiftPLusKey(char key) {
     INPUT ip;
     pressKey(&ip, VK_LSHIFT);
-    pressAndReleaseKey(key);
+    pressAndReleaseKeyChar(key);
     releaseKey(&ip);
 }
 
@@ -65,7 +88,7 @@ void upperOrLowerPress (char key) {
     } else if (key == '\n') {
         pressAndReleaseKey(VK_RETURN);
     } else {
-        pressAndReleaseKey(key);
+        pressAndReleaseKeyChar(key);
     }
 }
 

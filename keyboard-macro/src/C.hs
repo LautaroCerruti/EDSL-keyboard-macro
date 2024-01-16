@@ -11,6 +11,10 @@ isButton :: Key -> Bool
 isButton (MouseButton _) = True
 isButton _ = False
 
+isSpecialKey :: Key -> Bool
+isSpecialKey (SKey _) = True
+isSpecialKey _ = False
+
 skey2StringLinux :: SpecialKey -> String
 skey2StringLinux (LARROW) = "XK_Left"
 skey2StringLinux (UARROW) = "XK_Up"
@@ -119,62 +123,92 @@ closeMain ('l') = closeMainLinux
 closeMain ('w') = closeMainWindows
 closeMain _ = empty
 
+tm2DocLinux :: Tm -> Int -> Doc
+tm2DocLinux (Var _) _ = empty
+tm2DocLinux (Key k@(MouseButton _)) _ = text "pressAndReleaseButton(" <> key2DocLinux k <> text ");"
+tm2DocLinux (Key k) _ = text "pressAndReleaseKey(" <> key2DocLinux k <> text ");"
+tm2DocLinux (Mouse x y) _ = text "moveMouse(" <> int x <> text ", " <> int y <> text ");"
+tm2DocLinux (Usleep n) _ = text "usleep(" <> int n <> text ");"
+tm2DocLinux (Sleep n) _ = text "sleep(" <> int n <> text ");"
+tm2DocLinux (Line str) _ = 
+                           lbrace
+                        $$ text "const char *textToType = \"" 
+                        <> text str 
+                        <> text "\";"
+                        $$ text "pressLine(textToType);"
+                        $$ rbrace
+tm2DocLinux (While k tm) i = let ktext = key2DocLinux k in 
+                                   (if isButton k then text "pressButton(" else text "pressKey(")
+                                <> ktext 
+                                <> text ");" 
+                                $$ tm2DocLinux tm i
+                                $$ (if isButton k then text "releaseButton(" else text "releaseKey(")
+                                <> ktext 
+                                <> text ");"
+tm2DocLinux (Repeat n tm) i = let vText = text ("i" ++ show i) in
+                                       text "for (int " 
+                                    <> vText 
+                                    <> text " = 0; " 
+                                    <> vText 
+                                    <> text " < " 
+                                    <> int n 
+                                    <> text "; ++" 
+                                    <> vText 
+                                    <> text ") {" 
+                                    $$ nest tabW (tm2DocLinux tm (i+1)) 
+                                    $$ rbrace
+tm2DocLinux (Seq t1 t2) i = (tm2DocLinux t1 i) $$ (tm2DocLinux t2 i)
+
+tm2DocWindows :: Tm -> Int -> Doc
+tm2DocWindows (Var _) _ = empty
+tm2DocWindows (Key k@(MouseButton _)) _ = text "pressAndReleaseButton(" <> key2DocWindows k <> text ");"
+tm2DocWindows (Key k@(SKey _)) _ = text "pressAndReleaseKey(" <> key2DocWindows k <> text ");"
+tm2DocWindows (Key k@(NKey _)) _ = text "pressAndReleaseKeyChar(" <> key2DocWindows k <> text ");"
+tm2DocWindows (Mouse x y) _ = text "moveMouse(" <> int x <> text ", " <> int y <> text ");"
+tm2DocWindows (Usleep n) _ = text "usleep(" <> int n <> text ");"
+tm2DocWindows (Sleep n) _ = text "sleep(" <> int n <> text ");"
+tm2DocWindows (Line str) _ = 
+                               lbrace
+                            $$ text "const char *textToType = \"" 
+                            <> text str 
+                            <> text "\";"
+                            $$ text "pressLine(textToType);"
+                            $$ rbrace
+tm2DocWindows (While k tm) i = let ktext = key2DocWindows k in 
+                            if (isButton k) then
+                                    text "pressButton(" <> ktext <> text ");"
+                                $$ tm2DocWindows tm i
+                                $$ text "releaseButton(" <> ktext <> text ");"
+                            else 
+                                   lbrace
+                                $$ nest tabW (
+                                       text "INPUT ip" <> int i <> text ";"
+                                    $$ text "pressKey" 
+                                    <> (if(isSpecialKey k) then empty else text "Char")
+                                    <> text "(&ip" <> int i <> text ", " <> ktext <> text ");"
+                                    $$ tm2DocWindows tm (i+1)
+                                    $$ text "releaseKey(&ip" <> int i <> text ");"
+                                ) 
+                                $$ rbrace <> semi
+tm2DocWindows (Repeat n tm) i = let vText = text ("i" ++ show i) in
+                                       text "for (int " 
+                                    <> vText 
+                                    <> text " = 0; " 
+                                    <> vText 
+                                    <> text " < " 
+                                    <> int n 
+                                    <> text "; ++" 
+                                    <> vText 
+                                    <> text ") {" 
+                                    $$ nest tabW (tm2DocWindows tm (i+1)) 
+                                    $$ rbrace
+tm2DocWindows (Seq t1 t2) i = (tm2DocWindows t1 i) $$ (tm2DocWindows t2 i)
+
 tm2Doc :: Char -> Tm -> Doc
 tm2Doc c p = case c of
-                'l' -> go key2DocLinux p 0
-                'w' -> go key2DocWindows p 0
+                'l' -> tm2DocLinux p 0
+                'w' -> tm2DocWindows p 0
                 _   -> empty
-            where 
-                go :: (Key -> Doc) -> Tm -> Int -> Doc
-                go _ (Var _) _ = empty
-                go f (Key k@(MouseButton _)) _ = text "pressAndReleaseButton(" <> f k <> text ");"
-                go f (Key k) _ = text "pressAndReleaseKey(" <> f k <> text ");"
-                go _ (Mouse x y) _ = text "moveMouse(" <> int x <> text ", " <> int y <> text ");"
-                go _ (Usleep n) _ = text "usleep(" <> int n <> text ");"
-                go _ (Sleep n) _ = text "sleep(" <> int n <> text ");"
-                go _ (Line str) _ = 
-                       lbrace
-                    $$ text "const char *textToType = \"" 
-                    <> text str 
-                    <> text "\";"
-                    $$ text "pressLine(textToType);"
-                    $$ rbrace
-                go f (While k tm) i = let ktext = f k in 
-                                            if (c == 'l') then
-                                                   (if isButton k then text "pressButton(" else text "pressKey(")
-                                                <> ktext 
-                                                <> text ");" 
-                                                $$ go f tm i
-                                                $$ (if isButton k then text "releaseButton(" else text "releaseKey(")
-                                                <> ktext 
-                                                <> text ");" 
-                                            else 
-                                                if (isButton k) then
-                                                       text "pressButton(" <> ktext <> text ");"
-                                                    $$ go f tm i
-                                                    $$ text "releaseButton(" <> ktext <> text ");"
-                                                else
-                                                       lbrace
-                                                    $$ nest tabW (
-                                                           text "INPUT ip" <> int i <> text ";"
-                                                        $$ text "pressKey(&ip" <> int i <> text ", " <> ktext <> text ");"
-                                                        $$ go f tm (i+1)
-                                                        $$ text "releaseKey(&ip" <> int i <> text ");"
-                                                    ) 
-                                                    $$ rbrace
-                go f (Repeat n tm) i = let vText = text ("i" ++ show i) in
-                                           text "for (int " 
-                                        <> vText 
-                                        <> text " = 0; " 
-                                        <> vText 
-                                        <> text " < " 
-                                        <> int n 
-                                        <> text "; ++" 
-                                        <> vText 
-                                        <> text ") {" 
-                                        $$ nest tabW (go f tm (i+1)) 
-                                        $$ rbrace
-                go f (Seq t1 t2) i = (go f t1 i) $$ (go f t2 i)
 
 prog2C :: Char -> Tm -> String
 prog2C m t = render (vcat [prelude m, nest tabW (tm2Doc m t), closeMain m])

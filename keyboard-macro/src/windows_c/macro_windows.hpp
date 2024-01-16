@@ -18,11 +18,12 @@ using namespace std;
 // Compile with:
 // gcc -c -o macro_windows.o macro_windows.cpp -Wno-deprecated-declarations
 
+void pressKey(INPUT* ip, WORD key);
 /*
     Given a key press that key and dont release it, 
     commonly used for SHIFT, CTRL or WINDOWS
 */
-void pressKey(INPUT* ip, char key);
+void pressKeyChar(INPUT* ip, char key);
 
 /*
     Given a key, release it
@@ -32,7 +33,8 @@ void releaseKey(INPUT* ip);
 /*
     Press a key one time
 */
-void pressAndReleaseKey(char key);
+void pressAndReleaseKey(WORD key);
+void pressAndReleaseKeyChar(char key);
 
 /*
     Press a key while holding shift
