@@ -57,6 +57,7 @@ library
     , haskeline >=0.8.0.0
     , mtl
     , pretty
+    , process
     , strict
   default-language: Haskell2010
 
@@ -91,6 +92,7 @@ executable keyboard-macro-exe
     , keyboard-macro
     , mtl
     , pretty
+    , process
     , strict
   default-language: Haskell2010
 
@@ -126,5 +128,6 @@ test-suite keyboard-macro-test
     , keyboard-macro
     , mtl
     , pretty
+    , process
     , strict
   default-language: Haskell2010

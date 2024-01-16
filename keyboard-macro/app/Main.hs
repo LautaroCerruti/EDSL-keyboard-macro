@@ -6,11 +6,14 @@ import qualified System.Environment            as Env
 import           PrettyPrinter
 
 import System.Exit ( exitWith, ExitCode(ExitFailure) )
-import System.IO ( hPrint, stderr)
+import System.IO ( hPrint, stderr, hGetContents)
 import System.FilePath (dropExtension)
 import System.Directory ( getCurrentDirectory )
 import Common
 import C ( prog2C )
+import System.Process
+import System.Exit (ExitCode(..))
+
 
 import           MonadKM
 
@@ -21,13 +24,15 @@ data Options = Options
   , optAST      :: Bool
   , optLinux    :: Bool
   , optWindows  :: Bool
+  , optExe      :: Bool
+  , optCCode    :: Bool
   , optHelp     :: Bool
   }
   deriving Show
 
 defaultOptions :: Options
 defaultOptions =
-  Options { optPrint = False, optAST = False, optLinux = False, optWindows = False, optHelp = False }
+  Options { optPrint = False, optAST = False, optLinux = False, optWindows = False, optHelp = False, optCCode = False, optExe = False }
 
 options :: [OptDescr (Options -> Options)]
 options =
@@ -47,6 +52,14 @@ options =
            ["windows"]
            (NoArg (\opts -> opts { optWindows = True }))
            "Compilar para Windows"
+  , Option ['c']
+           ["c-code"]
+           (NoArg (\opts -> opts { optCCode = True }))
+           "Generar Codigo en C++"
+  , Option ['e']
+           ["executable"]
+           (NoArg (\opts -> opts { optExe = True }))
+           "Generar el ejecutable (solo funciona si se esta utilizando el sistema para el que se esta compilando)"
   , Option ['h']
            ["help"]
            (NoArg (\opts -> opts { optHelp = True }))
@@ -103,11 +116,29 @@ compileMacro :: MonadKM m => Prog -> Char -> FilePath -> m ()
 compileMacro (Prog xs p) m fp = do 
                                   mapM_ addDef xs
                                   plainP <- plainProg p
-                                  filepath <- liftIO getCurrentDirectory
-                                  ccode <- return (prog2C filepath m plainP)
+                                  cd <- liftIO getCurrentDirectory
+                                  ccode <- return (prog2C cd m plainP)
                                   printKM ccode
-                                  liftIO $ writeFile (dropExtension fp ++ ".cpp") ccode
+                                  let cname = (dropExtension fp ++ ".cpp")
+                                  liftIO $ writeFile cname ccode
+                                  liftIO $ c2exe m cname cd
                                   return ()
+
+c2exe :: Char -> FilePath -> FilePath -> IO ()
+c2exe m fp cd = do
+    let params = if (m == 'l') then [fp, "-o", (dropExtension fp), cd ++ "/src/linux_c/macro_linux.o", "-lX11", "-lXtst", "-lX11-xcb"]
+                               else [fp, "-o", (dropExtension fp ++ ".exe"), cd ++ "/src/windows_c/macro_windows.o", "-lstdc++"]
+
+    (_, Just hout, Just herr, ph) <- createProcess (proc "gcc" params){ std_out = CreatePipe, std_err = CreatePipe }
+
+    exitCode <- waitForProcess ph
+
+    case exitCode of
+        ExitSuccess   -> putStrLn "Compilation successful"
+        ExitFailure _ -> do
+            putStrLn "Compilation failed. Error output:"
+            errorOutput <- hGetContents herr
+            putStrLn errorOutput
 
 plainProg :: MonadKM m => Tm -> m Tm
 plainProg (Var n) = do 
