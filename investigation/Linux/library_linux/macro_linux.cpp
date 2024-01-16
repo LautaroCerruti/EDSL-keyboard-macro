@@ -57,8 +57,7 @@ void upperOrLowerPress (char key) {
     if (needsShift(key)) {
         pressShiftPLusKey(key);
     } else if (key == '\n') {
-        pressKey(XK_Return);
-        releaseKey(XK_Return);
+        pressAndReleaseKey(XK_Return);
     } else {
         pressAndReleaseKey(key);
     }

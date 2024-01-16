@@ -76,9 +76,10 @@ runOptions fp opts
         | optPrint opts     -> putStrLn (renderProg ast)
         | optLinux opts     -> do runOrFail (compileMacro ast 'l')
                                   return ()
-        -- | optWindows opts   -> Compile Windows
-        -- | otherwise         -> Compile Linux
-        | otherwise         -> print ast
+        | optWindows opts   -> do runOrFail (compileMacro ast 'w')
+                                  return ()
+        | otherwise         -> do runOrFail (compileMacro ast 'l')
+                                  return ()
 
 runOrFail :: KM a -> IO a
 runOrFail m = do

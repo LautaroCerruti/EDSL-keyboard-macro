@@ -38,13 +38,42 @@ skey2StringLinux (RSUPER) = "XK_Super_R"
 skey2StringLinux (MENU) = "XK_Menu"
 skey2StringLinux (Fkey i) = "XK_F" ++ (show i)
 
+skey2StringWindows :: SpecialKey -> String
+skey2StringWindows (LARROW) = "VK_LEFT"
+skey2StringWindows (UARROW) = "VK_UP"
+skey2StringWindows (DARROW) = "VK_DOWN"
+skey2StringWindows (RARROW) = "VK_RIGHT"
+skey2StringWindows (SHIFT) = "VK_SHIFT"
+skey2StringWindows (LSHIFT) = "VK_LSHIFT"
+skey2StringWindows (RSHIFT) = "VK_RSHIFT"
+skey2StringWindows (TAB) = "VK_TAB"
+skey2StringWindows (RETURN) = "VK_RETURN"
+skey2StringWindows (ENTER) = "VK_RETURN"
+skey2StringWindows (ESC) = "VK_ESCAPE"
+skey2StringWindows (SPACE) = "VK_SPACE"
+skey2StringWindows (CONTROL) = "VK_LCONTROL"
+skey2StringWindows (LCONTROL) = "VK_LCONTROL"
+skey2StringWindows (RCONTROL) = "VK_RCONTROL"
+skey2StringWindows (ALT) = "VK_MENU"
+skey2StringWindows (LALT) = "VK_LMENU"
+skey2StringWindows (RALT) = "VK_RMENU"
+skey2StringWindows (SUPR) = "VK_DELETE"
+skey2StringWindows (BACKSPACE) = "VK_BACK"
+skey2StringWindows (LSUPER) = "VK_LWIN"
+skey2StringWindows (SUPER) = "VK_LWIN"
+skey2StringWindows (RSUPER) = "VK_RWIN"
+skey2StringWindows (MENU) = "VK_APPS"
+skey2StringWindows (Fkey i) = "VK_F" ++ (show i)
+
 key2DocLinux :: Key -> Doc
 key2DocLinux (NKey k) = char '\'' <> char k <> char '\''
 key2DocLinux (SKey k) = text (skey2StringLinux k)
 key2DocLinux (MouseButton n) = int n
 
 key2DocWindows :: Key -> Doc
-key2DocWindows k = empty
+key2DocWindows (NKey k) = char '\'' <> char k <> char '\''
+key2DocWindows (SKey k) = text (skey2StringWindows k)
+key2DocWindows (MouseButton n) = int n
 
 line :: Doc
 line = text "\n"
@@ -59,9 +88,17 @@ preludeLinux = text "#include \"macro_linux.hpp\""
                     <> line
             )
 
+preludeWindows :: Doc
+preludeWindows = text "#include \"macro_windows.hpp\""
+            $$ text "int main() {"
+            $$ nest tabW (
+                    text "startMain();"
+                    <> line
+            )
+
 prelude :: Char -> Doc
 prelude ('l') = preludeLinux
-prelude ('w') = undefined
+prelude ('w') = preludeWindows
 prelude _ = empty
 
 closeMainLinux :: Doc
@@ -71,9 +108,15 @@ closeMainLinux = nest tabW (
                 )
                 $$ text "}"
 
+closeMainWindows :: Doc
+closeMainWindows = nest tabW (
+                       text "return 0;"
+                )
+                $$ text "}"
+
 closeMain :: Char -> Doc
 closeMain ('l') = closeMainLinux
-closeMain ('w') = undefined
+closeMain ('w') = closeMainWindows
 closeMain _ = empty
 
 tm2Doc :: Char -> Tm -> Doc
@@ -84,7 +127,7 @@ tm2Doc c p = case c of
             where 
                 go :: (Key -> Doc) -> Tm -> Int -> Doc
                 go _ (Var _) _ = empty
-                go f (Key k@(MouseButton n)) _ = text "pressAndReleaseButton(" <> f k <> text ");"
+                go f (Key k@(MouseButton _)) _ = text "pressAndReleaseButton(" <> f k <> text ");"
                 go f (Key k) _ = text "pressAndReleaseKey(" <> f k <> text ");"
                 go _ (Mouse x y) _ = text "moveMouse(" <> int x <> text ", " <> int y <> text ");"
                 go _ (Usleep n) _ = text "usleep(" <> int n <> text ");"
@@ -105,7 +148,20 @@ tm2Doc c p = case c of
                                                 $$ (if isButton k then text "releaseButton(" else text "releaseKey(")
                                                 <> ktext 
                                                 <> text ");" 
-                                            else empty
+                                            else 
+                                                if (isButton k) then
+                                                       text "pressButton(" <> ktext <> text ");"
+                                                    $$ go f tm i
+                                                    $$ text "releaseButton(" <> ktext <> text ");"
+                                                else
+                                                       lbrace
+                                                    $$ nest tabW (
+                                                           text "INPUT ip" <> int i <> text ";"
+                                                        $$ text "pressKey(&ip" <> int i <> text ", " <> ktext <> text ");"
+                                                        $$ go f tm (i+1)
+                                                        $$ text "releaseKey(&ip" <> int i <> text ");"
+                                                    ) 
+                                                    $$ rbrace
                 go f (Repeat n tm) i = let vText = text ("i" ++ show i) in
                                            text "for (int " 
                                         <> vText 
