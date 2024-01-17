@@ -130,7 +130,6 @@ compileMacro (Prog xs p) opts fp = do
                                   cd <- liftIO getCurrentDirectory
                                   m <- return (if optLinux opts then 'l' else 'w')
                                   ccode <- return (prog2C cd m plainP)
-                                  printKM ccode
                                   let cname = (dropExtension fp ++ ".cpp")
                                   liftIO $ writeFile cname ccode
                                   if (optExe opts) then liftIO $ c2exe m cname cd else return ()
