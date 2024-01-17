@@ -94,8 +94,8 @@ runOptions fp opts
   | optHelp opts = putStrLn (usageInfo "Uso: " options)
   | otherwise = do
     x11 <- liftIO isX11
-    if ((optWindows opts) && (not isWindows)) then putStrLn "Can't compile for windows while running in another SO" >>= (\_ -> exitWith (ExitFailure 1)) else return ()
-    if ((optLinux opts) && (not x11)) then putStrLn "Can't compile for linux, only if X11 is the window handler" >>= (\_ -> exitWith (ExitFailure 1)) else return ()
+    if ((optWindows opts) && (optExe opts) && (not isWindows)) then putStrLn "Can't compile for windows while running in another SO" >>= (\_ -> exitWith (ExitFailure 1)) else return ()
+    if ((optLinux opts) && (optExe opts) && (not x11)) then putStrLn "Can't compile for linux, only if X11 is the window handler" >>= (\_ -> exitWith (ExitFailure 1)) else return ()
     s <- readFile fp
     p <- parseIO fp prog_parse s
     case p of
