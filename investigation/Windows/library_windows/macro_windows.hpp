@@ -18,61 +18,62 @@ using namespace std;
 // Compile with:
 // gcc -c -o macro_windows.o macro_windows.cpp -Wno-deprecated-declarations
 
-void pressKey(INPUT* ip, WORD key);
+void w_pressKey(WORD key);
 /*
     Given a key press that key and dont release it, 
     commonly used for SHIFT, CTRL or WINDOWS
 */
-void pressKeyChar(INPUT* ip, char key);
+void w_pressKeyChar(char key);
 
 /*
     Given a key, release it
 */
-void releaseKey(INPUT* ip);
+void w_releaseKey(WORD key);
+void w_releaseKeyChar(char key);
 
 /*
     Press a key one time
 */
-void pressAndReleaseKey(WORD key);
-void pressAndReleaseKeyChar(char key);
+void w_pressAndReleaseKey(WORD key);
+void w_pressAndReleaseKeyChar(char key);
 
 /*
     Press a key while holding shift
 */
-void pressShiftPLusKey(char key);
+void w_pressShiftPLusKey(char key);
 
 /*
     checks if the char needs shift
 */
-bool needsShift(char key);
+bool w_needsShift(char key);
 
 /*
     press the char even if it needs shift or not
 */
-void upperOrLowerPress(char key);
+void w_upperOrLowerPress(char key);
 
 /*
     Press a series of keys corresponding to an array of char
 */
-void pressLine(const char *str);
+void w_pressLine(const char *str);
 
-void moveMouse(int x, int y);
+void w_moveMouse(int x, int y);
 
 /*
     Given a button press it and dont release it
 */
-void pressButton(int button);
+void w_pressButton(int button);
 
 /*
     Given a button, release it
 */
-void releaseButton(int button);
+void w_releaseButton(int button);
 
 /*
     Press a button one time
 */
-void pressAndReleaseButton(int button);
+void w_pressAndReleaseButton(int button);
 
-int startMain();
+int w_startMain();
 
 #endif 

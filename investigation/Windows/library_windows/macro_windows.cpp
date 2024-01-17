@@ -1,76 +1,104 @@
 #include "macro_windows.hpp"
 
-void pressKey(INPUT* ip, WORD key) {
-    ip->type = INPUT_KEYBOARD;
-    ip->ki.wScan = 0; // hardware scan code for key
-    ip->ki.time = 0;
-    ip->ki.dwExtraInfo = 0;
+/*
+    Given a keycode press it and dont release it
+*/
+void w_pressKey(WORD key) {
+    // keybd_event(key, 0, 0, 0);
 
+    INPUT ip;
+    // Set up a generic keyboard event.
+    ip.type = INPUT_KEYBOARD;
+    ip.ki.wScan = 0; // hardware scan code for key
+    ip.ki.time = 0;
+    ip.ki.dwExtraInfo = 0;
     // Press the key
-    ip->ki.wVk = key;
-    ip->ki.dwFlags = 0; // 0 for key press
-    SendInput(1, ip, sizeof(INPUT));
+    ip.ki.wVk = key;
+    ip.ki.dwFlags = 0; // 0 for key press
+    SendInput(1, &ip, sizeof(INPUT));
 }
 
-
 /*
-    Given an INPUT and a key press that key and dont release it, 
-    commonly used for SHIFT, CTRL or WINDOWS
+    Given a char press that key and dont release it
 */
-void pressKeyChar(INPUT* ip, char key) {
+void w_pressKeyChar(char key) {
+    // SHORT vkCode = VkKeyScan(key);
+    // keybd_event(LOBYTE(vkCode), 0, 0, 0);
+
+    INPUT ip;
     // Set up a generic keyboard event.
-    ip->type = INPUT_KEYBOARD;
-    ip->ki.wScan = 0; // hardware scan code for key
-    ip->ki.time = 0;
-    ip->ki.dwExtraInfo = 0;
+    ip.type = INPUT_KEYBOARD;
     // Press the key
     SHORT vkCode = VkKeyScan(key);
-    ip->ki.wVk = LOBYTE(vkCode);
-    ip->ki.dwFlags = 0; // 0 for key press
-    SendInput(1, ip, sizeof(INPUT));
+    ip.ki.wVk = LOBYTE(vkCode);
+    ip.ki.dwFlags = 0; // 0 for key press
+    SendInput(1, &ip, sizeof(INPUT));
 }
 
 /*
     Given an INPUT release it
 */
-void releaseKey(INPUT* ip) {
-    ip->ki.dwFlags = KEYEVENTF_KEYUP; // KEYEVENTF_KEYUP for key release
-    SendInput(1, ip, sizeof(INPUT));
+void w_releaseKeyChar(char key) {
+    // SHORT vkCode = VkKeyScan(key);
+    // keybd_event(LOBYTE(vkCode), 0, KEYEVENTF_KEYUP, 0);
+
+    INPUT ip;
+    // Set up a generic keyboard event.
+    ip.type = INPUT_KEYBOARD;
+    // Press the key
+    SHORT vkCode = VkKeyScan(key);
+    ip.ki.wVk = LOBYTE(vkCode);
+    ip.ki.dwFlags = KEYEVENTF_KEYUP; // 0 for key press
+    SendInput(1, &ip, sizeof(INPUT));
+}
+
+/*
+    Given an INPUT release it
+*/
+void w_releaseKey(WORD key) {
+    //keybd_event(key, 0, KEYEVENTF_KEYUP, 0);
+
+    INPUT ip;
+    // Set up a generic keyboard event.
+    ip.type = INPUT_KEYBOARD;
+    ip.ki.wScan = 0; // hardware scan code for key
+    ip.ki.time = 0;
+    ip.ki.dwExtraInfo = 0;
+    // Press the key
+    ip.ki.wVk = key;
+    ip.ki.dwFlags = KEYEVENTF_KEYUP; // 0 for key press
+    SendInput(1, &ip, sizeof(INPUT));
 }
 
 /*
     Press a key one time
 */
-void pressAndReleaseKey(WORD key) {
-    INPUT ip;
-    pressKey(&ip, key);
-    releaseKey(&ip);
+void w_pressAndReleaseKey(WORD key) {
+    w_pressKey(key);
+    w_releaseKey(key);
 }
 
 /*
     Press a key one time
 */
-void pressAndReleaseKeyChar(char key) {
-    INPUT ip;
-    pressKeyChar(&ip, key);
-    releaseKey(&ip);
+void w_pressAndReleaseKeyChar(char key) {
+    w_pressKeyChar(key);
+    w_releaseKey(key);
 }
 
 /*
     Press a key while holding shift
 */
-void pressShiftPLusKey(char key) {
-    INPUT ip;
-    pressKey(&ip, VK_LSHIFT);
-    pressAndReleaseKeyChar(key);
-    releaseKey(&ip);
+void w_pressShiftPLusKey(char key) {
+    w_pressKey(VK_LSHIFT);
+    w_pressAndReleaseKeyChar(key);
+    w_releaseKey(VK_LSHIFT);
 }
 
 /*
     checks if the char needs shift
-    TO DO revise
 */
-bool needsShift(char key) {
+bool w_needsShift(char key) {
     return (isupper(key) || key == '!' || key == '~' || key == '@' || key == '#' ||
         key == '$' || key == '%' || key == '^' || key == '&' || key == '*' ||
         key == '(' || key == ')' || key == '_' || key == '+' || key == '{' ||
@@ -82,34 +110,34 @@ bool needsShift(char key) {
     press the char even if it needs shift or not
     TO DO revise
 */
-void upperOrLowerPress (char key) {
-    if (needsShift(key)) {
-        pressShiftPLusKey(key);
+void w_upperOrLowerPress (char key) {
+    if (w_needsShift(key)) {
+        w_pressShiftPLusKey(key);
     } else if (key == '\n') {
-        pressAndReleaseKey(VK_RETURN);
+        w_pressAndReleaseKey(VK_RETURN);
     } else {
-        pressAndReleaseKeyChar(key);
+        w_pressAndReleaseKeyChar(key);
     }
 }
 
 /*
     Press a series of keys corresponding to an array of char
 */
-void pressLine (const char *str) {
+void w_pressLine (const char *str) {
     for (size_t i = 0; i < strlen(str); i++) {
-        upperOrLowerPress(str[i]);
+        w_upperOrLowerPress(str[i]);
         usleep(10000);  // Add a small delay between key presses (adjust as needed)
     }
 }
 
-void moveMouse(int x, int y) {
+void w_moveMouse(int x, int y) {
     SetCursorPos(x, y);
 }
 
 /*
     Given a button press it and dont release it
 */
-void pressButton(int button) {
+void w_pressButton(int button) {
     int bcode;
     if (button == 1) {
         bcode = MOUSEEVENTF_LEFTDOWN;
@@ -124,7 +152,7 @@ void pressButton(int button) {
 /*
     Given a button, release it
 */
-void releaseButton(int button) {
+void w_releaseButton(int button) {
     int bcode;
     if (button == 1) {
         bcode = MOUSEEVENTF_LEFTUP;
@@ -139,16 +167,16 @@ void releaseButton(int button) {
 /*
     Press a button one time
 */
-void pressAndReleaseButton(int button) {
-    pressButton(button);
-    releaseButton(button);
+void w_pressAndReleaseButton(int button) {
+    w_pressButton(button);
+    w_releaseButton(button);
 }
 
-int startMain() {
+int w_startMain() {
     if ((GetKeyState(VK_CAPITAL) & 0x0001)!=0) // Check if CapsLock is on and turn it off
     { 
         cout << "Caps Lock is on. Turning it off..." << endl;
-        pressAndReleaseKey(VK_CAPITAL);
+        w_pressAndReleaseKey(VK_CAPITAL);
     } else {
         cout << "Caps Lock is off." << endl;
     }
