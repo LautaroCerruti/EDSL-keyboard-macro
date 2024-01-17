@@ -86,7 +86,7 @@ preludeLinux :: FilePath -> Doc
 preludeLinux fp =  text "#include \"" <> text fp <> text "/src/linux_c/macro_linux.hpp\""
                 $$ text "int main() {"
                 $$ nest tabW (
-                        text "if (startMain()) { // returns 1 if it failed"
+                        text "if (l_startMain()) { // returns 1 if it failed"
                         $$ nest tabW (text "return 1;")
                         $$ text "}"
                         <> line
@@ -96,7 +96,7 @@ preludeWindows :: FilePath -> Doc
 preludeWindows fp =    text "#include \"" <> text fp <> text "/src/windows_c/macro_windows.hpp\""
                     $$ text "int main() {"
                     $$ nest tabW (
-                            text "startMain();"
+                            text "w_startMain();"
                             <> line
                     )
 
@@ -125,9 +125,9 @@ closeMain _ = empty
 
 tm2DocLinux :: Tm -> Int -> Doc
 tm2DocLinux (Var _) _ = empty
-tm2DocLinux (Key k@(MouseButton _)) _ = text "pressAndReleaseButton(" <> key2DocLinux k <> text ");"
-tm2DocLinux (Key k) _ = text "pressAndReleaseKey(" <> key2DocLinux k <> text ");"
-tm2DocLinux (Mouse x y) _ = text "moveMouse(" <> int x <> text ", " <> int y <> text ");"
+tm2DocLinux (Key k@(MouseButton _)) _ = text "l_pressAndReleaseButton(" <> key2DocLinux k <> text ");"
+tm2DocLinux (Key k) _ = text "l_pressAndReleaseKey(" <> key2DocLinux k <> text ");"
+tm2DocLinux (Mouse x y) _ = text "l_moveMouse(" <> int x <> text ", " <> int y <> text ");"
 tm2DocLinux (Usleep n) _ = text "usleep(" <> int n <> text ");"
 tm2DocLinux (Sleep n) _ = text "sleep(" <> int n <> text ");"
 tm2DocLinux (Line str) _ = 
@@ -135,14 +135,14 @@ tm2DocLinux (Line str) _ =
                         $$ text "const char *textToType = \"" 
                         <> text str 
                         <> text "\";"
-                        $$ text "pressLine(textToType);"
+                        $$ text "l_pressLine(textToType);"
                         $$ rbrace
 tm2DocLinux (While k tm) i = let ktext = key2DocLinux k in 
-                                   (if isButton k then text "pressButton(" else text "pressKey(")
+                                   (if isButton k then text "l_pressButton(" else text "l_pressKey(")
                                 <> ktext 
                                 <> text ");" 
                                 $$ tm2DocLinux tm i
-                                $$ (if isButton k then text "releaseButton(" else text "releaseKey(")
+                                $$ (if isButton k then text "l_releaseButton(" else text "l_releaseKey(")
                                 <> ktext 
                                 <> text ");"
 tm2DocLinux (Repeat n tm) i = let vText = text ("i" ++ show i) in
@@ -161,10 +161,10 @@ tm2DocLinux (Seq t1 t2) i = (tm2DocLinux t1 i) $$ (tm2DocLinux t2 i)
 
 tm2DocWindows :: Tm -> Int -> Doc
 tm2DocWindows (Var _) _ = empty
-tm2DocWindows (Key k@(MouseButton _)) _ = text "pressAndReleaseButton(" <> key2DocWindows k <> text ");"
-tm2DocWindows (Key k@(SKey _)) _ = text "pressAndReleaseKey(" <> key2DocWindows k <> text ");"
-tm2DocWindows (Key k@(NKey _)) _ = text "pressAndReleaseKeyChar(" <> key2DocWindows k <> text ");"
-tm2DocWindows (Mouse x y) _ = text "moveMouse(" <> int x <> text ", " <> int y <> text ");"
+tm2DocWindows (Key k@(MouseButton _)) _ = text "w_pressAndReleaseButton(" <> key2DocWindows k <> text ");"
+tm2DocWindows (Key k@(SKey _)) _ = text "w_pressAndReleaseKey(" <> key2DocWindows k <> text ");"
+tm2DocWindows (Key k@(NKey _)) _ = text "w_pressAndReleaseKeyChar(" <> key2DocWindows k <> text ");"
+tm2DocWindows (Mouse x y) _ = text "w_moveMouse(" <> int x <> text ", " <> int y <> text ");"
 tm2DocWindows (Usleep n) _ = text "usleep(" <> int n <> text ");"
 tm2DocWindows (Sleep n) _ = text "sleep(" <> int n <> text ");"
 tm2DocWindows (Line str) _ = 
@@ -172,24 +172,21 @@ tm2DocWindows (Line str) _ =
                             $$ text "const char *textToType = \"" 
                             <> text str 
                             <> text "\";"
-                            $$ text "pressLine(textToType);"
+                            $$ text "w_pressLine(textToType);"
                             $$ rbrace
 tm2DocWindows (While k tm) i = let ktext = key2DocWindows k in 
                             if (isButton k) then
-                                    text "pressButton(" <> ktext <> text ");"
-                                $$ tm2DocWindows tm i
-                                $$ text "releaseButton(" <> ktext <> text ");"
+                                    text "w_pressButton(" <> ktext <> text ");"
+                                 $$ tm2DocWindows tm i
+                                 $$ text "w_releaseButton(" <> ktext <> text ");"
                             else 
-                                   lbrace
-                                $$ nest tabW (
-                                       text "INPUT ip" <> int i <> text ";"
-                                    $$ text "pressKey" 
-                                    <> (if(isSpecialKey k) then empty else text "Char")
-                                    <> text "(&ip" <> int i <> text ", " <> ktext <> text ");"
-                                    $$ tm2DocWindows tm (i+1)
-                                    $$ text "releaseKey(&ip" <> int i <> text ");"
-                                ) 
-                                $$ rbrace <> semi
+                                    text "w_pressKey" 
+                                 <> (if(isSpecialKey k) then empty else text "Char")
+                                 <> text "(" <> ktext <> text ");"
+                                 $$ tm2DocWindows tm i
+                                 $$ text "w_releaseKey" 
+                                 <> (if(isSpecialKey k) then empty else text "Char")
+                                 <> text "(" <> ktext <> text ");"
 tm2DocWindows (Repeat n tm) i = let vText = text ("i" ++ show i) in
                                        text "for (int " 
                                     <> vText 
