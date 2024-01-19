@@ -2,4 +2,4 @@ def copy = CTRL+C
 def paste = CTRL+V
 def selectall = CTRL+A
 
-sleep 5;selectall;copy;RARROW;ENTER;ENTER;paste
+sleep 10;selectall;copy;RARROW;ENTER;ENTER;paste

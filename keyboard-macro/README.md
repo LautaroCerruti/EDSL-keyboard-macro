@@ -1,6 +1,6 @@
 # keyboard-macro
 
 TO-DO:
-- use FFI and run macro without compiling
+- revise why macro execution returns in error insted of exit success
 - repeat by time
 - wheel scroll

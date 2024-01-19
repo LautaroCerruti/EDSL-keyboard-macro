@@ -27,13 +27,14 @@ data Options = Options
   , optWindows  :: Bool
   , optExe      :: Bool
   , optCCode    :: Bool
+  , optRun      :: Bool
   , optHelp     :: Bool
   }
   deriving Show
 
 defaultOptions :: Options
 defaultOptions =
-  Options { optPrint = False, optAST = False, optLinux = False, optWindows = False, optHelp = False, optCCode = False, optExe = False }
+  Options { optPrint = False, optAST = False, optLinux = False, optWindows = False, optHelp = False, optCCode = False, optExe = False, optRun = False }
 
 options :: [OptDescr (Options -> Options)]
 options =
@@ -61,6 +62,10 @@ options =
            ["executable"]
            (NoArg (\opts -> opts { optExe = True }))
            "Generar el ejecutable (solo funciona si se esta utilizando el sistema para el que se esta compilando)"
+  , Option ['r']
+           ["run"]
+           (NoArg (\opts -> opts { optRun = True }))
+           "Correr el macro (solo funciona si se esta utilizando el sistema para el que se esta corriendo)"
   , Option ['h']
            ["help"]
            (NoArg (\opts -> opts { optHelp = True }))
@@ -88,24 +93,41 @@ main = do
   s : opts   <- Env.getArgs
   (opts', _) <- finalOptions opts
   runOptions s opts'
+                    
+setDefaultOS :: Options -> Options
+setDefaultOS opts = if (not (optLinux opts) && not (optWindows opts)) 
+                      then (
+                        if isWindows 
+                          then opts { optWindows = True}
+                          else opts { optLinux = True}
+                        ) 
+                      else opts
+
+setDefaultComOpt :: Options -> Options
+setDefaultComOpt opts = if (not (optCCode opts) && not (optExe opts) && not (optRun opts)) 
+                          then opts { optExe = True }
+                          else opts
 
 runOptions :: FilePath -> Options -> IO ()
 runOptions fp opts
   | optHelp opts = putStrLn (usageInfo "Uso: " options)
   | otherwise = do
     x11 <- liftIO isX11
-    if ((optWindows opts) && (optExe opts) && (not isWindows)) then putStrLn "Can't compile for windows while running in another SO" >>= (\_ -> exitWith (ExitFailure 1)) else return ()
-    if ((optLinux opts) && (optExe opts) && (not x11)) then putStrLn "Can't compile for linux, only if X11 is the window handler" >>= (\_ -> exitWith (ExitFailure 1)) else return ()
+    opts' <- return (setDefaultComOpt (setDefaultOS opts))
+    if ((optWindows opts') && ((optExe opts') || (optRun opts')) && (not isWindows)) 
+      then putStrLn "Can't compile for windows while running in another SO" >>= (\_ -> exitWith (ExitFailure 1)) 
+      else return ()
+    if ((optLinux opts') && (optExe opts' || optRun opts') && (not x11)) 
+      then putStrLn "Can't compile for linux if X11 is not the window handler or if running in another SO" >>= (\_ -> exitWith (ExitFailure 1)) 
+      else return ()
     s <- readFile fp
     p <- parseIO fp prog_parse s
     case p of
       Nothing -> return ()
       Just ast   -> if
-        | optAST opts       -> print ast
-        | optPrint opts     -> putStrLn (renderProg ast)
-        | optCCode opts     -> runOrFail (compileMacro ast opts fp)
-        | optExe opts       -> runOrFail (compileMacro ast opts fp)
-        | otherwise         -> return ()
+        | optAST opts'       -> print ast
+        | optPrint opts'     -> putStrLn (renderProg ast)
+        | otherwise         -> runOrFail (compileMacro ast opts' fp)
 
 runOrFail :: KM a -> IO ()
 runOrFail m = do
@@ -132,14 +154,17 @@ compileMacro (Prog xs p) opts fp = do
                                   ccode <- return (prog2C cd m plainP)
                                   let cname = (dropExtension fp ++ ".cpp")
                                   liftIO $ writeFile cname ccode
-                                  if (optExe opts) then liftIO $ c2exe m cname cd else return ()
+                                  exeName <- if (optExe opts || optRun opts) then liftIO $ c2exe m cname cd else return ""
                                   if (not (optCCode opts)) then liftIO $ removeFile cname else return ()
+                                  if (optRun opts) then liftIO $ runMacro exeName else return ()
+                                  if (not (optExe opts)) then liftIO $ removeFile exeName else return ()
                                   return ()
 
-c2exe :: Char -> FilePath -> FilePath -> IO ()
+c2exe :: Char -> FilePath -> FilePath -> IO String
 c2exe m fp cd = do
-    let params = if (m == 'l') then [fp, "-o", (dropExtension fp), cd ++ "/src/linux_c/macro_linux.o", "-lX11", "-lXtst", "-lX11-xcb"]
-                               else [fp, "-o", (dropExtension fp ++ ".exe"), cd ++ "/src/windows_c/macro_windows.o", "-lstdc++"]
+    let exeName = if (m == 'l') then dropExtension fp else dropExtension fp ++ ".exe"
+    let params = if (m == 'l') then [fp, "-o", exeName, cd ++ "/src/linux_c/macro_linux.o", "-lX11", "-lXtst", "-lX11-xcb"]
+                               else [fp, "-o", exeName, cd ++ "/src/windows_c/macro_windows.o", "-lstdc++"]
     (_, Just _, Just herr, ph) <- createProcess (proc "gcc" params){ std_out = CreatePipe, std_err = CreatePipe }
     exitCode <- waitForProcess ph
     case exitCode of
@@ -148,6 +173,15 @@ c2exe m fp cd = do
             putStrLn "Compilation failed. Error output:"
             errorOutput <- hGetContents herr
             putStrLn errorOutput
+            exitWith (ExitFailure 1)
+    return exeName
+
+runMacro :: FilePath -> IO ()
+runMacro fp = do
+    putStrLn ("Running Macro" ++ fp)
+    (_, Just _, Just _, ph) <- createProcess (proc fp []){ std_out = CreatePipe, std_err = CreatePipe }
+    waitForProcess ph
+    return ()
 
 plainProg :: MonadKM m => Tm -> m Tm
 plainProg (Var n) = do 
