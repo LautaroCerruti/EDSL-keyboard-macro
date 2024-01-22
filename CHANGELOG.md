@@ -1,4 +1,4 @@
-# Changelog for `keyboard-macro`
+# Changelog for `EDSL-keyboard-macro`
 
 All notable changes to this project will be documented in this file.
 

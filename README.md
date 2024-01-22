@@ -1,4 +1,4 @@
-# keyboard-macro
+# EDSL-keyboard-macro
 
 TO-DO:
 - revise if it works in windows
