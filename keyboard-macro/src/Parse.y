@@ -204,7 +204,7 @@ lexer cont s = case s of
                     (';':cs) -> cont TSemicolon cs
                     unknown -> \line -> Failed $ 
                      "Línea "++(show line)++": No se puede reconocer "++(show $ take 10 unknown)++ "..."
-                    where lexVar cs = case span isAlpha cs of
+                    where lexVar cs = case span isAlphaNum cs of
                               ("def",rest)  -> cont TDef rest
                               ("line",(' ':('\"':rest)))  -> if elem '\"' rest then cont (TLine (takeTillChar '\"' rest)) (dropTillChar '\"' rest) else \ line -> Failed $ "Línea "++(show line)++": Unmatched \""
                               ("repeat",rest)  -> cont TRepeat rest
@@ -240,19 +240,21 @@ lexer cont s = case s of
                               ("LSUPER", rest) -> cont TLSUPER rest 
                               ("RSUPER", rest) -> cont TRSUPER rest 
                               ("MENU", rest) -> cont TMENU rest 
-                              ("F",'1':('0':rest)) -> cont (TFKey 10) rest
-                              ("F",'1':('1':rest)) -> cont (TFKey 11) rest
-                              ("F",'1':('2':rest)) -> cont (TFKey 12) rest
-                              ("F",'1':rest) -> cont (TFKey 1) rest
-                              ("F",'2':rest) -> cont (TFKey 2) rest
-                              ("F",'3':rest) -> cont (TFKey 3) rest
-                              ("F",'4':rest) -> cont (TFKey 4) rest
-                              ("F",'5':rest) -> cont (TFKey 5) rest
-                              ("F",'6':rest) -> cont (TFKey 6) rest
-                              ("F",'7':rest) -> cont (TFKey 7) rest
-                              ("F",'8':rest) -> cont (TFKey 8) rest
-                              ("F",'9':rest) -> cont (TFKey 9) rest
-                              (var,rest)      -> if (length(var) > 1) then cont (TString var) rest else cont (TChar (head var)) rest
+                              (var,rest)     -> if (length(var) > 1) then lexVarWithNum var rest else cont (TChar (head var)) rest
+                          lexVarWithNum var rest = case var of 
+                              "F10" -> cont (TFKey 10) rest
+                              "F11" -> cont (TFKey 11) rest
+                              "F12" -> cont (TFKey 12) rest
+                              "F1"  -> cont (TFKey 1) rest
+                              "F2"  -> cont (TFKey 2) rest
+                              "F3"  -> cont (TFKey 3) rest
+                              "F4"  -> cont (TFKey 4) rest
+                              "F5"  -> cont (TFKey 5) rest
+                              "F6"  -> cont (TFKey 6) rest
+                              "F7"  -> cont (TFKey 7) rest
+                              "F8"  -> cont (TFKey 8) rest
+                              "F9"  -> cont (TFKey 9) rest
+                              var   -> cont (TString var) rest
                           lexNum cs = let (num,rest) = span isDigit cs in cont (TInt (read num)) rest
                           consumirBK anidado cl cont s = case s of
                               ('-':('-':cs)) -> consumirBK anidado cl cont $ dropWhile ((/=) '\n') cs

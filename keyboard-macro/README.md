@@ -2,5 +2,5 @@
 
 TO-DO:
 - revise why macro execution returns in error insted of exit success
-- repeat by time
+- change to C inted of C++
 - wheel scroll
