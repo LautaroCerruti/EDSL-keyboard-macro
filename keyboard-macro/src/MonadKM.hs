@@ -19,11 +19,11 @@ class (MonadIO m, MonadState GlEnv m, MonadError Error m) => MonadKM m where
 addDef :: MonadKM m => Def Tm -> m ()
 addDef d = modify (\s -> s { glb = d : glb s})
 
-lookupDef :: MonadKM m => Name -> m (Maybe Tm)
+lookupDef :: MonadKM m => Name -> m (Maybe (Def Tm))
 lookupDef name = do
      s <- get
      case filter (hasName name) (glb s) of
-       (Def _ e):_ -> return (Just e)
+       (Def n e):_ -> return (Just (Def n e))
        _ -> return Nothing
    where hasName :: Name -> Def a -> Bool
          hasName nm (Def nm' _) = nm == nm'

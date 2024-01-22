@@ -1,4 +1,4 @@
-module C ( prog2C ) where
+module C ( prog2C, def2CFun) where
 
 import           Common
 import           Text.PrettyPrint
@@ -82,30 +82,32 @@ key2DocWindows (MouseButton n) = int n
 line :: Doc
 line = text "\n"
 
-preludeLinux :: FilePath -> Doc
-preludeLinux fp =  text "#include \"" <> text fp <> text "/src/linux_c/macro_linux.hpp\""
-                $$ text "#include <time.h>"
-                $$ text "int main() {"
-                $$ nest tabW (
-                        text "if (l_startMain()) { // returns 1 if it failed"
-                        $$ nest tabW (text "return 1;")
-                        $$ text "}"
-                        <> line
-                )
+preludeLinux :: FilePath -> [Doc] ->  Doc
+preludeLinux fp defList = text "#include \"" <> text fp <> text "/src/linux_c/macro_linux.hpp\""
+                       $$ text "#include <time.h>\n"
+                       $$ vcat defList
+                       $$ text "int main() {"
+                       $$ nest tabW (
+                                    text "if (l_startMain()) { // returns 1 if it failed"
+                                 $$ nest tabW (text "return 1;")
+                                 $$ text "}"
+                                 <> line
+                       )
 
-preludeWindows :: FilePath -> Doc
-preludeWindows fp =    text "#include \"" <> text fp <> text "/src/windows_c/macro_windows.hpp\""
-                    $$ text "#include <time.h>"
-                    $$ text "int main() {"
-                    $$ nest tabW (
-                            text "w_startMain();"
-                            <> line
-                    )
+preludeWindows :: FilePath -> [Doc] ->  Doc
+preludeWindows fp defList = text "#include \"" <> text fp <> text "/src/windows_c/macro_windows.hpp\""
+                         $$ text "#include <time.h>\n"
+                         $$ vcat defList
+                         $$ text "int main() {"
+                         $$ nest tabW (
+                                    text "w_startMain();"
+                                 <> line
+                         )
 
-prelude :: FilePath -> Char -> Doc
-prelude fp ('l') = preludeLinux fp
-prelude fp ('w') = preludeWindows fp
-prelude _ _ = empty
+prelude :: FilePath -> Char -> [Doc] -> Doc
+prelude fp ('l') deflist = preludeLinux fp deflist
+prelude fp ('w') deflist = preludeWindows fp deflist
+prelude _ _ _ = empty
 
 closeMainLinux :: Doc
 closeMainLinux = nest tabW (
@@ -126,7 +128,7 @@ closeMain ('w') = closeMainWindows
 closeMain _ = empty
 
 tm2DocLinux :: Tm -> Int -> Doc
-tm2DocLinux (Var _) _ = empty
+tm2DocLinux (Var n) _ = text (n ++ "_();")
 tm2DocLinux (Key k@(MouseButton _)) _ = text "l_pressAndReleaseButton(" <> key2DocLinux k <> text ");"
 tm2DocLinux (Key k) _ = text "l_pressAndReleaseKey(" <> key2DocLinux k <> text ");"
 tm2DocLinux (Mouse x y) _ = text "l_moveMouse(" <> int x <> text ", " <> int y <> text ");"
@@ -169,7 +171,7 @@ tm2DocLinux (TimeRepeat n tm) i = let vText = text ("start_time" ++ show i) in
 tm2DocLinux (Seq t1 t2) i = (tm2DocLinux t1 i) $$ (tm2DocLinux t2 i)
 
 tm2DocWindows :: Tm -> Int -> Doc
-tm2DocWindows (Var _) _ = empty
+tm2DocWindows (Var n) _ = text (n ++ "_();")
 tm2DocWindows (Key k@(MouseButton _)) _ = text "w_pressAndReleaseButton(" <> key2DocWindows k <> text ");"
 tm2DocWindows (Key k@(SKey _)) _ = text "w_pressAndReleaseKey(" <> key2DocWindows k <> text ");"
 tm2DocWindows (Key k@(NKey _)) _ = text "w_pressAndReleaseKeyChar(" <> key2DocWindows k <> text ");"
@@ -223,5 +225,8 @@ tm2Doc c p = case c of
                 'w' -> tm2DocWindows p 0
                 _   -> empty
 
-prog2C :: FilePath -> Char -> Tm -> String
-prog2C fp m t = render (vcat [prelude fp m, nest tabW (tm2Doc m t), closeMain m])
+def2CFun :: Char -> Def Tm -> Doc
+def2CFun m (Def n tm) = text ("void " ++ n ++ "_() {") $$ nest tabW (tm2Doc m tm) $$ text "}\n"
+
+prog2C :: FilePath -> Char -> Tm -> [Doc] -> String
+prog2C fp m t defList = render (vcat [prelude fp m defList, nest tabW (tm2Doc m t), closeMain m])

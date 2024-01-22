@@ -43,3 +43,7 @@ module Common where
     -- | Valor del estado inicial
     initialEnv :: GlEnv
     initialEnv = GlEnv [] 
+
+    defListHas :: [Def Tm] -> Def Tm -> Bool 
+    defListHas [] _ = False
+    defListHas ((Def n _):xs) e@(Def n' _) = if (n == n') then True else defListHas xs e

@@ -12,7 +12,7 @@ import System.FilePath (dropExtension)
 import System.Directory ( getCurrentDirectory, removeFile )
 import System.Info (os)
 import Common
-import C ( prog2C )
+import C ( prog2C, def2CFun )
 import System.Process
 import System.Exit (ExitCode(..))
 
@@ -147,11 +147,12 @@ parseIO f p x = case p x of
 
 compileMacro :: MonadKM m => Prog -> Options -> FilePath -> m ()
 compileMacro (Prog xs p) opts fp = do 
-                                  mapM_ addDef xs
-                                  plainP <- plainProg p
-                                  cd <- liftIO getCurrentDirectory
                                   m <- return (if optLinux opts then 'l' else 'w')
-                                  ccode <- return (prog2C cd m plainP)
+                                  mapM_ addDef xs
+                                  needed <- getNeededDefs p
+                                  let defList = map (def2CFun m) (filter (defListHas needed) xs)
+                                  cd <- liftIO getCurrentDirectory
+                                  ccode <- return (prog2C cd m p defList)
                                   let cname = (dropExtension fp ++ ".cpp")
                                   liftIO $ writeFile cname ccode
                                   exeName <- if (optExe opts || optRun opts) then liftIO $ c2exe m cname cd else return ""
@@ -183,18 +184,18 @@ runMacro fp = do
     _ <- waitForProcess ph
     return ()
 
-plainProg :: MonadKM m => Tm -> m Tm
-plainProg (Var n) = do 
+getNeededDefs :: MonadKM m => Tm -> m [Def Tm]
+getNeededDefs (Var n) = do 
                       def <- lookupDef n
                       case def of
-                        Just fdef -> do 
-                                      def' <- plainProg fdef
-                                      return def'
+                        Just fdef@(Def _ tm) -> do 
+                                      needed <- getNeededDefs tm
+                                      return (fdef : needed)
                         Nothing -> failKM ("Undefined def " ++ n)
-plainProg (While k t) = While k <$> (plainProg t)
-plainProg (Repeat i t) = Repeat i <$> (plainProg t)
-plainProg (TimeRepeat i t) = TimeRepeat i <$> (plainProg t)
-plainProg (Seq t1 t2) = do t1' <- plainProg t1
-                           t2' <- plainProg t2
-                           return (Seq t1' t2')
-plainProg t = return t
+getNeededDefs (While _ t) = getNeededDefs t
+getNeededDefs (Repeat _ t) = getNeededDefs t
+getNeededDefs (TimeRepeat _ t) = getNeededDefs t
+getNeededDefs (Seq t1 t2) = do d1 <- getNeededDefs t1
+                               d2 <- getNeededDefs t2
+                               return (d1 ++ d2)
+getNeededDefs _ = return []

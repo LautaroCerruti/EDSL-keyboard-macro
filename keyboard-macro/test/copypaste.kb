@@ -1,5 +1,9 @@
+def dummy1 = 1
 def copy = CTRL+C
+def dummy2 = 2
 def paste = CTRL+V
+def dummy3 = 3
 def selectall = CTRL+A
+def main = sleep 10
 
-sleep 10;selectall;copy;RARROW;ENTER;ENTER;paste
+main;selectall;copy;RARROW;ENTER;ENTER;paste
