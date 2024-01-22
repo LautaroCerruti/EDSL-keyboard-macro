@@ -19,6 +19,7 @@ module Common where
         | Sleep Int
         | While Key Tm
         | Repeat Int Tm
+        | TimeRepeat Int Tm
         | Line String
         | Seq Tm Tm
         | Mouse Int Int

@@ -42,6 +42,12 @@ pTm (Repeat n t)   =
         <+> lparen 
         $$ nest tabW (pTm t) 
         $$ rparen
+pTm (TimeRepeat n t)   = 
+    text "timeRepeat" 
+        <+> int n 
+        <+> lparen 
+        $$ nest tabW (pTm t) 
+        $$ rparen
 pTm (Line l)       = text "line \"" <> text l <> text "\""
 pTm (Seq a b)      = pTm a <> semi <+> pTm b
 

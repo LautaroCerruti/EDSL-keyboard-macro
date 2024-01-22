@@ -1,32 +1,37 @@
-#include "macro_linux.hpp"
+#include "library_linux/macro_linux.hpp"
+#include <time.h>
 
 // Compile with:
 // gcc -o example example.cpp macro_linux.o -lX11 -lXtst -lX11-xcb
 
 int main() {
-    if (startMain()) { // returns 1 if it failed
+    if (l_startMain()) { // returns 1 if it failed
         return 1;
     }
 
     // ---------------------------------------------------
 
-    pressAndReleaseButton(1);
-    sleep(1);
-    sleep(1);
-	moveMouse(200, 200);
-    sleep(1);
-	moveMouse(300, 300);
-    sleep(1);
-	moveMouse(400, 400);
-    sleep(1);
-	moveMouse(500, 500);
-    sleep(1);
-	moveMouse(600, 600);
-    sleep(1);
-	moveMouse(700, 700);
-    sleep(1);
-	moveMouse(800, 800);
+    {
+        time_t start_time = time(NULL); // Get current time
+        while ((time(NULL) - start_time) < 5) {
+            
+            l_moveMouse(200, 200);
+            usleep(100000);
+            l_moveMouse(300, 300);
+            usleep(100000);
+            l_moveMouse(400, 400);
+            usleep(100000);
+            l_moveMouse(500, 500);
+            usleep(100000);
+            l_moveMouse(600, 600);
+            usleep(100000);
+            l_moveMouse(700, 700);
+            usleep(100000);
+            l_moveMouse(800, 800);
+            usleep(100000);
 
+        }
+    }
     // ---------------------------------------------------
 
     XCloseDisplay(display);

@@ -84,6 +84,7 @@ line = text "\n"
 
 preludeLinux :: FilePath -> Doc
 preludeLinux fp =  text "#include \"" <> text fp <> text "/src/linux_c/macro_linux.hpp\""
+                $$ text "#include <time.h>"
                 $$ text "int main() {"
                 $$ nest tabW (
                         text "if (l_startMain()) { // returns 1 if it failed"
@@ -94,6 +95,7 @@ preludeLinux fp =  text "#include \"" <> text fp <> text "/src/linux_c/macro_lin
 
 preludeWindows :: FilePath -> Doc
 preludeWindows fp =    text "#include \"" <> text fp <> text "/src/windows_c/macro_windows.hpp\""
+                    $$ text "#include <time.h>"
                     $$ text "int main() {"
                     $$ nest tabW (
                             text "w_startMain();"
@@ -157,6 +159,13 @@ tm2DocLinux (Repeat n tm) i = let vText = text ("i" ++ show i) in
                                     <> text ") {" 
                                     $$ nest tabW (tm2DocLinux tm (i+1)) 
                                     $$ rbrace
+tm2DocLinux (TimeRepeat n tm) i = let vText = text ("start_time" ++ show i) in
+                                       lbrace <> nest tabW(
+                                          text "time_t " <> vText <> text " = time(NULL);"
+                                       $$ text "while((time(NULL) - " <> vText <> text ") < " <> int n <> text ") {" 
+                                       $$ nest tabW (tm2DocLinux tm (i+1)) 
+                                       $$ rbrace
+                                       ) <> rbrace
 tm2DocLinux (Seq t1 t2) i = (tm2DocLinux t1 i) $$ (tm2DocLinux t2 i)
 
 tm2DocWindows :: Tm -> Int -> Doc
@@ -199,6 +208,13 @@ tm2DocWindows (Repeat n tm) i = let vText = text ("i" ++ show i) in
                                     <> text ") {" 
                                     $$ nest tabW (tm2DocWindows tm (i+1)) 
                                     $$ rbrace
+tm2DocWindows (TimeRepeat n tm) i = let vText = text ("start_time" ++ show i) in
+                                       lbrace <> nest tabW(
+                                          text "time_t " <> vText <> text " = time(NULL);"
+                                       $$ text "while((time(NULL) - " <> vText <> text ") < " <> int n <> text ") {" 
+                                       $$ nest tabW (tm2DocWindows tm (i+1)) 
+                                       $$ rbrace
+                                       ) <> rbrace
 tm2DocWindows (Seq t1 t2) i = (tm2DocWindows t1 i) $$ (tm2DocWindows t2 i)
 
 tm2Doc :: Char -> Tm -> Doc

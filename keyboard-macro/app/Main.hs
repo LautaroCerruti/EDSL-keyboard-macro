@@ -157,7 +157,7 @@ compileMacro (Prog xs p) opts fp = do
                                   exeName <- if (optExe opts || optRun opts) then liftIO $ c2exe m cname cd else return ""
                                   if (not (optCCode opts)) then liftIO $ removeFile cname else return ()
                                   if (optRun opts) then liftIO $ runMacro exeName else return ()
-                                  if (not (optExe opts)) then liftIO $ removeFile exeName else return ()
+                                  if (not (optExe opts) && (optRun opts)) then liftIO $ removeFile exeName else return ()
                                   return ()
 
 c2exe :: Char -> FilePath -> FilePath -> IO String
@@ -180,7 +180,7 @@ runMacro :: FilePath -> IO ()
 runMacro fp = do
     putStrLn ("Running Macro" ++ fp)
     (_, Just _, Just _, ph) <- createProcess (proc fp []){ std_out = CreatePipe, std_err = CreatePipe }
-    waitForProcess ph
+    _ <- waitForProcess ph
     return ()
 
 plainProg :: MonadKM m => Tm -> m Tm
@@ -193,6 +193,7 @@ plainProg (Var n) = do
                         Nothing -> failKM ("Undefined def " ++ n)
 plainProg (While k t) = While k <$> (plainProg t)
 plainProg (Repeat i t) = Repeat i <$> (plainProg t)
+plainProg (TimeRepeat i t) = TimeRepeat i <$> (plainProg t)
 plainProg (Seq t1 t2) = do t1' <- plainProg t1
                            t2' <- plainProg t2
                            return (Seq t1' t2')

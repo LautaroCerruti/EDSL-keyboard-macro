@@ -1,0 +1,4 @@
+def move = mouse 200 200
+def movea = mouse 400 400
+
+timeRepeat 10 (mouse 200 200;sleep 1; movea;sleep 1)

@@ -19,6 +19,7 @@ import Data.Char
     ')'         { TClose }
     DEF         { TDef }
     REPEAT      { TRepeat }
+    TIMEREPEAT  { TTimeRepeat }
     SLEEP       { TSleep }
     USLEEP      { TUSleep }
     MOUSE       { TMouse }
@@ -62,9 +63,10 @@ import Data.Char
 Def     :  DEF STRING '=' Macro         { Def $2 $4 }
 
 Macro   :: { Tm }
-        : Macro ';' Macro                { Seq $1 $3}
+        : Macro ';' Macro               { Seq $1 $3}
         | LINE                          { Line $1}
         | REPEAT INT Macro              { Repeat $2 $3}
+        | TIMEREPEAT INT Macro          { TimeRepeat $2 $3}
         | Key '+' Macro                 { While $1 $3 }
         | SLEEP INT                     { Sleep $2 }
         | USLEEP INT                    { Usleep $2 }
@@ -154,6 +156,7 @@ data Token = TString String
                | TSemicolon
                | TEquals
                | TRepeat
+               | TTimeRepeat
                | TSleep
                | TUSleep
                | TLARROW
@@ -205,6 +208,7 @@ lexer cont s = case s of
                               ("def",rest)  -> cont TDef rest
                               ("line",(' ':('\"':rest)))  -> if elem '\"' rest then cont (TLine (takeTillChar '\"' rest)) (dropTillChar '\"' rest) else \ line -> Failed $ "Línea "++(show line)++": Unmatched \""
                               ("repeat",rest)  -> cont TRepeat rest
+                              ("timeRepeat",rest)  -> cont TTimeRepeat rest
                               ("sleep",rest)  -> cont TSleep rest
                               ("usleep",rest) -> cont TUSleep rest
                               ("mouse",rest) -> cont TMouse rest
