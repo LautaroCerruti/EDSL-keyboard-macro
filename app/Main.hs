@@ -150,7 +150,7 @@ compileMacro (Prog xs p) opts fp = do
                                   m <- return (if optLinux opts then 'l' else 'w')
                                   mapM_ addDef xs
                                   needed <- getNeededDefs p
-                                  let defList = map (def2CFun m) (filter (defListHas needed) xs)
+                                  let defList = map (def2CFun m) (foldl (\list e -> if defListHas list e then list else e:list) [] needed)
                                   cd <- liftIO getCurrentDirectory
                                   ccode <- return (prog2C cd m p defList)
                                   let cname = (dropExtension fp ++ ".cpp")
