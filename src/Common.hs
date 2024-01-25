@@ -44,6 +44,7 @@ module Common where
     initialEnv :: GlEnv
     initialEnv = GlEnv [] 
 
+    -- Given a list of defs and a def, checks if the def is in the list using the name of the def
     defListHas :: [Def Tm] -> Def Tm -> Bool 
     defListHas [] _ = False
     defListHas ((Def n _):xs) e@(Def n' _) = if (n == n') then True else defListHas xs e

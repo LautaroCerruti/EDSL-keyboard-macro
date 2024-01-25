@@ -127,6 +127,7 @@ closeMain ('l') = closeMainLinux
 closeMain ('w') = closeMainWindows
 closeMain _ = empty
 
+-- transforms an AST into its C code for Linux
 tm2DocLinux :: Tm -> Int -> Doc
 tm2DocLinux (Var n) _ = text (n ++ "_();")
 tm2DocLinux (Key k@(MouseButton _)) _ = text "l_pressAndReleaseButton(" <> key2DocLinux k <> text ");"
@@ -170,6 +171,7 @@ tm2DocLinux (TimeRepeat n tm) i = let vText = text ("start_time" ++ show i) in
                                        ) <> rbrace
 tm2DocLinux (Seq t1 t2) i = (tm2DocLinux t1 i) $$ (tm2DocLinux t2 i)
 
+-- transforms an AST into its C code for Windows
 tm2DocWindows :: Tm -> Int -> Doc
 tm2DocWindows (Var n) _ = text (n ++ "_();")
 tm2DocWindows (Key k@(MouseButton _)) _ = text "w_pressAndReleaseButton(" <> key2DocWindows k <> text ");"
@@ -219,14 +221,19 @@ tm2DocWindows (TimeRepeat n tm) i = let vText = text ("start_time" ++ show i) in
                                        ) <> rbrace
 tm2DocWindows (Seq t1 t2) i = (tm2DocWindows t1 i) $$ (tm2DocWindows t2 i)
 
+-- Transforms a Tm to a Doc with its C code depoending on the mode
 tm2Doc :: Char -> Tm -> Doc
 tm2Doc c p = case c of
                 'l' -> tm2DocLinux p 0
                 'w' -> tm2DocWindows p 0
                 _   -> empty
 
+-- Given a variable definition and the mode, create the Doc corresponding to its C code as a function
 def2CFun :: Char -> Def Tm -> Doc
 def2CFun m (Def n tm) = text ("void " ++ n ++ "_() {") $$ nest tabW (tm2Doc m tm) $$ text "}\n"
 
+-- Given the filepath of the current directory, the mode, the AST of the macro and
+-- an array of Doc corresponding to the variables used, 
+-- returns an String that is the compilation to C of the Macro
 prog2C :: FilePath -> Char -> Tm -> [Doc] -> String
 prog2C fp m t defList = render (vcat [prelude fp m defList, nest tabW (tm2Doc m t), closeMain m])

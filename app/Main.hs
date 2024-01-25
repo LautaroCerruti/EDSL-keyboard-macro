@@ -57,7 +57,7 @@ options =
   , Option ['c']
            ["c-code"]
            (NoArg (\opts -> opts { optCCode = True }))
-           "Generar Codigo en C++"
+           "Generar Codigo en C"
   , Option ['e']
            ["executable"]
            (NoArg (\opts -> opts { optExe = True }))
@@ -93,7 +93,8 @@ main = do
   s : opts   <- Env.getArgs
   (opts', _) <- finalOptions opts
   runOptions s opts'
-                    
+
+-- Given the options, if not OS was selected, sets the one running
 setDefaultOS :: Options -> Options
 setDefaultOS opts = if (not (optLinux opts) && not (optWindows opts)) 
                       then (
@@ -103,6 +104,7 @@ setDefaultOS opts = if (not (optLinux opts) && not (optWindows opts))
                         ) 
                       else opts
 
+-- Given the options, if not action option was selected, sets the executable generation as default
 setDefaultComOpt :: Options -> Options
 setDefaultComOpt opts = if (not (optCCode opts) && not (optExe opts) && not (optRun opts)) 
                           then opts { optExe = True }
@@ -145,6 +147,7 @@ parseIO f p x = case p x of
     return Nothing
   Ok r -> return (Just r)
 
+-- Given the program parsed, the options and the filepath of the file, compile the program
 compileMacro :: MonadKM m => Prog -> Options -> FilePath -> m ()
 compileMacro (Prog xs p) opts fp = do 
                                   m <- return (if optLinux opts then 'l' else 'w')
@@ -161,6 +164,7 @@ compileMacro (Prog xs p) opts fp = do
                                   if (not (optExe opts) && (optRun opts)) then liftIO $ removeFile exeName else return ()
                                   return ()
 
+-- Compiles the C file previously generated to an executable 
 c2exe :: Char -> FilePath -> FilePath -> IO String
 c2exe m fp cd = do
     let exeName = if (m == 'l') then dropExtension fp else dropExtension fp ++ ".exe"
@@ -177,6 +181,7 @@ c2exe m fp cd = do
             exitWith (ExitFailure 1)
     return exeName
 
+-- Given the filepath of the executable, runs it
 runMacro :: FilePath -> IO ()
 runMacro fp = do
     putStrLn ("Running Macro" ++ fp)
@@ -184,6 +189,7 @@ runMacro fp = do
     _ <- waitForProcess ph
     return ()
 
+-- Given a term, gets all the variables defined used by it
 getNeededDefs :: MonadKM m => Tm -> m [Def Tm]
 getNeededDefs (Var n) = do 
                       def <- lookupDef n

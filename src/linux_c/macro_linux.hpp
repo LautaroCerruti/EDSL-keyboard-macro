@@ -51,6 +51,9 @@ void l_upperOrLowerPress(char key);
 */
 void l_pressLine(const char *str);
 
+/*
+    Move the mouse to the pos (x, y)
+*/
 void l_moveMouse(int x, int y);
 
 /*

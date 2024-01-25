@@ -18,11 +18,11 @@ using namespace std;
 // Compile with:
 // gcc -c -o macro_windows.o macro_windows.cpp -Wno-deprecated-declarations
 
-void w_pressKey(WORD key);
+
 /*
-    Given a key press that key and dont release it, 
-    commonly used for SHIFT, CTRL or WINDOWS
+    Given a key press that key and dont release it
 */
+void w_pressKey(WORD key);
 void w_pressKeyChar(char key);
 
 /*
@@ -57,6 +57,9 @@ void w_upperOrLowerPress(char key);
 */
 void w_pressLine(const char *str);
 
+/*
+    Move the mouse to the pos (x, y)
+*/
 void w_moveMouse(int x, int y);
 
 /*
