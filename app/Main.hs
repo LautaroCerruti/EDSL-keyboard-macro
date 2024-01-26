@@ -169,7 +169,7 @@ c2exe :: Char -> FilePath -> FilePath -> IO String
 c2exe m fp cd = do
     let exeName = if (m == 'l') then dropExtension fp else dropExtension fp ++ ".exe"
     let params = if (m == 'l') then [fp, "-o", exeName, cd ++ "/src/linux_c/macro_linux.o", "-lX11", "-lXtst", "-lX11-xcb"]
-                               else [fp, "-o", exeName, cd ++ "/src/windows_c/macro_windows.o", "-lstdc++"]
+                               else [fp, "-o", exeName, cd ++ "/src/windows_c/macro_windows.o", "-lstdc++", "-Wno-deprecated-declarations"]
     (_, Just _, Just herr, ph) <- createProcess (proc "gcc" params){ std_out = CreatePipe, std_err = CreatePipe }
     exitCode <- waitForProcess ph
     case exitCode of

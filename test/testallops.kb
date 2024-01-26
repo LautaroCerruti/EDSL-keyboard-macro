@@ -1,0 +1,20 @@
+-- Mouse test
+def testMouse = mouse 960 640; RMB; sleep 1; mouse 940 640; LMB; usleep 50000; LMB; sleep 1
+
+-- While, key and special key test
+def copy = CTRL+C
+def paste = CTRL+V
+def selectall = CTRL+A
+def testWhile = sleep 5;selectall;usleep 50000;copy;usleep 50000;RARROW;ENTER;ENTER;paste;usleep 50000
+
+-- Test Repeats
+def testRepeat = repeat 3 a
+def testRepeat2 = repeat 3 d
+def testTimeRepeat = timeRepeat 1 (s;usleep 1000)
+def testAllRepeat = testRepeat;testTimeRepeat;testRepeat2
+
+-- testLine
+def printL = line "TeSt!! :)"
+
+-- Macro
+sleep 10;testMouse;printL;testWhile;ENTER;ENTER;testAllRepeat
