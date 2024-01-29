@@ -7,16 +7,13 @@
 // is included below.
 #define WINVER 0x0500
 #include <windows.h>
-#include <iostream>
 #include <ctype.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 
-using namespace std;
-
 // Compile with:
-// gcc -c -o macro_windows.o macro_windows.cpp -Wno-deprecated-declarations
+// gcc -c -o macro_windows.o macro_windows.c -Wno-deprecated-declarations
 
 
 /*
@@ -45,7 +42,7 @@ void w_pressShiftPLusKey(char key);
 /*
     checks if the char needs shift
 */
-bool w_needsShift(char key);
+int w_needsShift(char key);
 
 /*
     press the char even if it needs shift or not

@@ -83,7 +83,7 @@ line :: Doc
 line = text "\n"
 
 preludeLinux :: FilePath -> [Doc] ->  Doc
-preludeLinux fp defList = text "#include \"" <> text fp <> text "/src/linux_c/macro_linux.hpp\""
+preludeLinux fp defList = text "#include \"" <> text fp <> text "/src/linux_c/macro_linux.h\""
                        $$ text "#include <time.h>\n"
                        $$ vcat defList
                        $$ text "int main() {"
@@ -95,7 +95,7 @@ preludeLinux fp defList = text "#include \"" <> text fp <> text "/src/linux_c/ma
                        )
 
 preludeWindows :: FilePath -> [Doc] ->  Doc
-preludeWindows fp defList = text "#include \"" <> text fp <> text "/src/windows_c/macro_windows.hpp\""
+preludeWindows fp defList = text "#include \"" <> text fp <> text "/src/windows_c/macro_windows.h\""
                          $$ text "#include <time.h>\n"
                          $$ vcat defList
                          $$ text "int main() {"

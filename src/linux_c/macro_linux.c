@@ -1,4 +1,4 @@
-#include "macro_linux.hpp"
+#include "macro_linux.h"
 
 // Compile with:
 // gcc -c -o macro_linux.o macro_linux.cpp -lX11 -lXtst -lX11-xcb
@@ -42,7 +42,7 @@ void l_pressShiftPLusKey(char key) {
 /*
     checks if the char needs shift
 */
-bool l_needsShift(char key) {
+int l_needsShift(char key) {
     return (isupper(key) || key == '!' || key == '~' || key == '@' || key == '#' ||
         key == '$' || key == '%' || key == '^' || key == '&' || key == '*' ||
         key == '(' || key == ')' || key == '_' || key == '+' || key == '{' ||

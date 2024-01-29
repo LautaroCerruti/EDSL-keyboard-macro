@@ -156,7 +156,7 @@ compileMacro (Prog xs p) opts fp = do
                                   let defList = map (def2CFun m) (foldl (\list e -> if defListHas list e then list else e:list) [] needed)
                                   cd <- liftIO getCurrentDirectory
                                   ccode <- return (prog2C cd m p defList)
-                                  let cname = (dropExtension fp ++ ".cpp")
+                                  let cname = (dropExtension fp ++ ".c")
                                   liftIO $ writeFile cname ccode
                                   exeName <- if (optExe opts || optRun opts) then liftIO $ c2exe m cname cd else return ""
                                   if (not (optCCode opts)) then liftIO $ removeFile cname else return ()
