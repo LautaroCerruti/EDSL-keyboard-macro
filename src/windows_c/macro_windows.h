@@ -19,61 +19,61 @@
 /*
     Given a key press that key and dont release it
 */
-void w_pressKey(WORD key);
-void w_pressKeyChar(char key);
+void pressKey(WORD key);
+void pressKeyChar(char key);
 
 /*
     Given a key, release it
 */
-void w_releaseKey(WORD key);
-void w_releaseKeyChar(char key);
+void releaseKey(WORD key);
+void releaseKeyChar(char key);
 
 /*
     Press a key one time
 */
-void w_pressAndReleaseKey(WORD key);
-void w_pressAndReleaseKeyChar(char key);
+void pressAndReleaseKey(WORD key);
+void pressAndReleaseKeyChar(char key);
 
 /*
     Press a key while holding shift
 */
-void w_pressShiftPLusKey(char key);
+void pressShiftPLusKey(char key);
 
 /*
     checks if the char needs shift
 */
-int w_needsShift(char key);
+int needsShift(char key);
 
 /*
     press the char even if it needs shift or not
 */
-void w_upperOrLowerPress(char key);
+void upperOrLowerPress(char key);
 
 /*
     Press a series of keys corresponding to an array of char
 */
-void w_pressLine(const char *str);
+void pressLine(const char *str);
 
 /*
     Move the mouse to the pos (x, y)
 */
-void w_moveMouse(int x, int y);
+void moveMouse(int x, int y);
 
 /*
     Given a button press it and dont release it
 */
-void w_pressButton(int button);
+void pressButton(int button);
 
 /*
     Given a button, release it
 */
-void w_releaseButton(int button);
+void releaseButton(int button);
 
 /*
     Press a button one time
 */
-void w_pressAndReleaseButton(int button);
+void pressAndReleaseButton(int button);
 
-int w_startMain();
+int startMain();
 
 #endif 

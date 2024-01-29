@@ -88,7 +88,7 @@ preludeLinux fp defList = text "#include \"" <> text fp <> text "/src/linux_c/ma
                        $$ vcat defList
                        $$ text "int main() {"
                        $$ nest tabW (
-                                    text "if (l_startMain()) { // returns 1 if it failed"
+                                    text "if (startMain()) { // returns 1 if it failed"
                                  $$ nest tabW (text "return 1;")
                                  $$ text "}"
                                  <> line
@@ -100,7 +100,7 @@ preludeWindows fp defList = text "#include \"" <> text fp <> text "/src/windows_
                          $$ vcat defList
                          $$ text "int main() {"
                          $$ nest tabW (
-                                    text "w_startMain();"
+                                    text "startMain();"
                                  <> line
                          )
 
@@ -127,27 +127,30 @@ closeMain ('l') = closeMainLinux
 closeMain ('w') = closeMainWindows
 closeMain _ = empty
 
+tm2DocGeneral :: Tm -> (Key -> Doc) -> Doc
+tm2DocGeneral (Var n) _ = text (n ++ "_();")
+tm2DocGeneral (Key k@(MouseButton _)) f = text "pressAndReleaseButton(" <> f k <> text ");"
+tm2DocGeneral (Key k) f = text "pressAndReleaseKey(" <> f k <> text ");"
+tm2DocGeneral (Mouse x y) _ = text "moveMouse(" <> int x <> text ", " <> int y <> text ");"
+tm2DocGeneral (Usleep n) _ = text "usleep(" <> int n <> text ");"
+tm2DocGeneral (Sleep n) _ = text "sleep(" <> int n <> text ");"
+tm2DocGeneral (Line str) _ = 
+                               lbrace
+                            $$ text "const char *textToType = \"" 
+                            <> text str 
+                            <> text "\";"
+                            $$ text "pressLine(textToType);"
+                            $$ rbrace
+tm2DocGeneral _ _ = empty
+
 -- transforms an AST into its C code for Linux
 tm2DocLinux :: Tm -> Int -> Doc
-tm2DocLinux (Var n) _ = text (n ++ "_();")
-tm2DocLinux (Key k@(MouseButton _)) _ = text "l_pressAndReleaseButton(" <> key2DocLinux k <> text ");"
-tm2DocLinux (Key k) _ = text "l_pressAndReleaseKey(" <> key2DocLinux k <> text ");"
-tm2DocLinux (Mouse x y) _ = text "l_moveMouse(" <> int x <> text ", " <> int y <> text ");"
-tm2DocLinux (Usleep n) _ = text "usleep(" <> int n <> text ");"
-tm2DocLinux (Sleep n) _ = text "sleep(" <> int n <> text ");"
-tm2DocLinux (Line str) _ = 
-                           lbrace
-                        $$ text "const char *textToType = \"" 
-                        <> text str 
-                        <> text "\";"
-                        $$ text "l_pressLine(textToType);"
-                        $$ rbrace
 tm2DocLinux (While k tm) i = let ktext = key2DocLinux k in 
-                                   (if isButton k then text "l_pressButton(" else text "l_pressKey(")
+                                   (if isButton k then text "pressButton(" else text "pressKey(")
                                 <> ktext 
                                 <> text ");" 
                                 $$ tm2DocLinux tm i
-                                $$ (if isButton k then text "l_releaseButton(" else text "l_releaseKey(")
+                                $$ (if isButton k then text "releaseButton(" else text "releaseKey(")
                                 <> ktext 
                                 <> text ");"
 tm2DocLinux (Repeat n tm) i = let vText = text ("i" ++ show i) in
@@ -170,34 +173,22 @@ tm2DocLinux (TimeRepeat n tm) i = let vText = text ("start_time" ++ show i) in
                                        $$ rbrace
                                        ) <> rbrace
 tm2DocLinux (Seq t1 t2) i = (tm2DocLinux t1 i) $$ (tm2DocLinux t2 i)
+tm2DocLinux tm _ = tm2DocGeneral tm key2DocLinux 
 
 -- transforms an AST into its C code for Windows
 tm2DocWindows :: Tm -> Int -> Doc
-tm2DocWindows (Var n) _ = text (n ++ "_();")
-tm2DocWindows (Key k@(MouseButton _)) _ = text "w_pressAndReleaseButton(" <> key2DocWindows k <> text ");"
-tm2DocWindows (Key k@(SKey _)) _ = text "w_pressAndReleaseKey(" <> key2DocWindows k <> text ");"
-tm2DocWindows (Key k@(NKey _)) _ = text "w_pressAndReleaseKeyChar(" <> key2DocWindows k <> text ");"
-tm2DocWindows (Mouse x y) _ = text "w_moveMouse(" <> int x <> text ", " <> int y <> text ");"
-tm2DocWindows (Usleep n) _ = text "usleep(" <> int n <> text ");"
-tm2DocWindows (Sleep n) _ = text "sleep(" <> int n <> text ");"
-tm2DocWindows (Line str) _ = 
-                               lbrace
-                            $$ text "const char *textToType = \"" 
-                            <> text str 
-                            <> text "\";"
-                            $$ text "w_pressLine(textToType);"
-                            $$ rbrace
+tm2DocWindows (Key k@(NKey _)) _ = text "pressAndReleaseKeyChar(" <> key2DocWindows k <> text ");"
 tm2DocWindows (While k tm) i = let ktext = key2DocWindows k in 
                             if (isButton k) then
-                                    text "w_pressButton(" <> ktext <> text ");"
+                                    text "pressButton(" <> ktext <> text ");"
                                  $$ tm2DocWindows tm i
-                                 $$ text "w_releaseButton(" <> ktext <> text ");"
+                                 $$ text "releaseButton(" <> ktext <> text ");"
                             else 
-                                    text "w_pressKey" 
+                                    text "pressKey" 
                                  <> (if(isSpecialKey k) then empty else text "Char")
                                  <> text "(" <> ktext <> text ");"
                                  $$ tm2DocWindows tm i
-                                 $$ text "w_releaseKey" 
+                                 $$ text "releaseKey" 
                                  <> (if(isSpecialKey k) then empty else text "Char")
                                  <> text "(" <> ktext <> text ");"
 tm2DocWindows (Repeat n tm) i = let vText = text ("i" ++ show i) in
@@ -220,6 +211,7 @@ tm2DocWindows (TimeRepeat n tm) i = let vText = text ("start_time" ++ show i) in
                                        $$ rbrace
                                        ) <> rbrace
 tm2DocWindows (Seq t1 t2) i = (tm2DocWindows t1 i) $$ (tm2DocWindows t2 i)
+tm2DocWindows tm _ = tm2DocGeneral tm key2DocWindows 
 
 -- Transforms a Tm to a Doc with its C code depoending on the mode
 tm2Doc :: Char -> Tm -> Doc

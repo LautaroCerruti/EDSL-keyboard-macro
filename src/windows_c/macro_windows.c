@@ -3,7 +3,7 @@
 /*
     Given a keycode press it and dont release it
 */
-void w_pressKey(WORD key) {
+void pressKey(WORD key) {
     // keybd_event(key, 0, 0, 0);
 
     INPUT ip;
@@ -21,7 +21,7 @@ void w_pressKey(WORD key) {
 /*
     Given a char press that key and dont release it
 */
-void w_pressKeyChar(char key) {
+void pressKeyChar(char key) {
     // SHORT vkCode = VkKeyScan(key);
     // keybd_event(LOBYTE(vkCode), 0, 0, 0);
 
@@ -38,7 +38,7 @@ void w_pressKeyChar(char key) {
 /*
     Given an INPUT release it
 */
-void w_releaseKeyChar(char key) {
+void releaseKeyChar(char key) {
     // SHORT vkCode = VkKeyScan(key);
     // keybd_event(LOBYTE(vkCode), 0, KEYEVENTF_KEYUP, 0);
 
@@ -55,7 +55,7 @@ void w_releaseKeyChar(char key) {
 /*
     Given an INPUT release it
 */
-void w_releaseKey(WORD key) {
+void releaseKey(WORD key) {
     //keybd_event(key, 0, KEYEVENTF_KEYUP, 0);
 
     INPUT ip;
@@ -73,32 +73,32 @@ void w_releaseKey(WORD key) {
 /*
     Press a key one time
 */
-void w_pressAndReleaseKey(WORD key) {
-    w_pressKey(key);
-    w_releaseKey(key);
+void pressAndReleaseKey(WORD key) {
+    pressKey(key);
+    releaseKey(key);
 }
 
 /*
     Press a key one time
 */
-void w_pressAndReleaseKeyChar(char key) {
-    w_pressKeyChar(key);
-    w_releaseKey(key);
+void pressAndReleaseKeyChar(char key) {
+    pressKeyChar(key);
+    releaseKey(key);
 }
 
 /*
     Press a key while holding shift
 */
-void w_pressShiftPLusKey(char key) {
-    w_pressKey(VK_LSHIFT);
-    w_pressAndReleaseKeyChar(key);
-    w_releaseKey(VK_LSHIFT);
+void pressShiftPLusKey(char key) {
+    pressKey(VK_LSHIFT);
+    pressAndReleaseKeyChar(key);
+    releaseKey(VK_LSHIFT);
 }
 
 /*
     checks if the char needs shift
 */
-int w_needsShift(char key) {
+int needsShift(char key) {
     return (isupper(key) || key == '!' || key == '~' || key == '@' || key == '#' ||
         key == '$' || key == '%' || key == '^' || key == '&' || key == '*' ||
         key == '(' || key == ')' || key == '_' || key == '+' || key == '{' ||
@@ -110,34 +110,34 @@ int w_needsShift(char key) {
     press the char even if it needs shift or not
     TO DO revise
 */
-void w_upperOrLowerPress (char key) {
-    if (w_needsShift(key)) {
-        w_pressShiftPLusKey(key);
+void upperOrLowerPress (char key) {
+    if (needsShift(key)) {
+        pressShiftPLusKey(key);
     } else if (key == '\n') {
-        w_pressAndReleaseKey(VK_RETURN);
+        pressAndReleaseKey(VK_RETURN);
     } else {
-        w_pressAndReleaseKeyChar(key);
+        pressAndReleaseKeyChar(key);
     }
 }
 
 /*
     Press a series of keys corresponding to an array of char
 */
-void w_pressLine (const char *str) {
+void pressLine (const char *str) {
     for (size_t i = 0; i < strlen(str); i++) {
-        w_upperOrLowerPress(str[i]);
+        upperOrLowerPress(str[i]);
         usleep(10000);  // Add a small delay between key presses (adjust as needed)
     }
 }
 
-void w_moveMouse(int x, int y) {
+void moveMouse(int x, int y) {
     SetCursorPos(x, y);
 }
 
 /*
     Given a button press it and dont release it
 */
-void w_pressButton(int button) {
+void pressButton(int button) {
     int bcode;
     if (button == 1) {
         bcode = MOUSEEVENTF_LEFTDOWN;
@@ -152,7 +152,7 @@ void w_pressButton(int button) {
 /*
     Given a button, release it
 */
-void w_releaseButton(int button) {
+void releaseButton(int button) {
     int bcode;
     if (button == 1) {
         bcode = MOUSEEVENTF_LEFTUP;
@@ -167,16 +167,16 @@ void w_releaseButton(int button) {
 /*
     Press a button one time
 */
-void w_pressAndReleaseButton(int button) {
-    w_pressButton(button);
-    w_releaseButton(button);
+void pressAndReleaseButton(int button) {
+    pressButton(button);
+    releaseButton(button);
 }
 
-int w_startMain() {
+int startMain() {
     if ((GetKeyState(VK_CAPITAL) & 0x0001)!=0) // Check if CapsLock is on and turn it off
     { 
         printf("Caps Lock is on. Turning it off...\n");
-        w_pressAndReleaseKey(VK_CAPITAL);
+        pressAndReleaseKey(VK_CAPITAL);
     } else {
         printf("Caps Lock is off.\n");
     }

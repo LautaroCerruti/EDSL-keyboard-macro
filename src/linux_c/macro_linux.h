@@ -19,58 +19,58 @@ extern Display *display;
     Given a key press that key and dont release it, 
     commonly used for SHIFT, CTRL or WINDOWS
 */
-void l_pressKey(int keySym);
+void pressKey(int keySym);
 
 /*
     Given a key, release it
 */
-void l_releaseKey(int keySym);
+void releaseKey(int keySym);
 
 /*
     Press a key one time
 */
-void l_pressAndReleaseKey(int c);
+void pressAndReleaseKey(int c);
 
 /*
     Press a key while holding shift
 */
-void l_pressShiftPLusKey(char key);
+void pressShiftPLusKey(char key);
 
 /*
     checks if the char needs shift
 */
-int l_needsShift(char key);
+int needsShift(char key);
 
 /*
     press the char even if it needs shift or not
 */
-void l_upperOrLowerPress(char key);
+void upperOrLowerPress(char key);
 
 /*
     Press a series of keys corresponding to an array of char
 */
-void l_pressLine(const char *str);
+void pressLine(const char *str);
 
 /*
     Move the mouse to the pos (x, y)
 */
-void l_moveMouse(int x, int y);
+void moveMouse(int x, int y);
 
 /*
     Given a button press it and dont release it
 */
-void l_pressButton(int button);
+void pressButton(int button);
 
 /*
     Given a button, release it
 */
-void l_releaseButton(int button);
+void releaseButton(int button);
 
 /*
     Press a button one time
 */
-void l_pressAndReleaseButton(int button);
+void pressAndReleaseButton(int button);
 
-int l_startMain();
+int startMain();
 
 #endif 

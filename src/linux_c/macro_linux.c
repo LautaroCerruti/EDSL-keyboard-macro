@@ -9,7 +9,7 @@ Display *display;
     Given a key press that key and dont release it, 
     commonly used for SHIFT, CTRL or WINDOWS
 */
-void l_pressKey(int keySym) {
+void pressKey(int keySym) {
     XTestFakeKeyEvent(display, XKeysymToKeycode(display, keySym), True, 0);
     XFlush(display);
 }
@@ -17,7 +17,7 @@ void l_pressKey(int keySym) {
 /*
     Given a key, release it
 */
-void l_releaseKey(int keySym) {
+void releaseKey(int keySym) {
     XTestFakeKeyEvent(display, XKeysymToKeycode(display, keySym), False, 0);
     XFlush(display);
 }
@@ -25,24 +25,24 @@ void l_releaseKey(int keySym) {
 /*
     Press a key one time
 */
-void l_pressAndReleaseKey(int c) {
-    l_pressKey(c);
-    l_releaseKey(c);
+void pressAndReleaseKey(int c) {
+    pressKey(c);
+    releaseKey(c);
 }
 
 /*
     Press a key while holding shift
 */
-void l_pressShiftPLusKey(char key) {
-    l_pressKey(XK_Shift_L);
-    l_pressAndReleaseKey(key);
-    l_releaseKey(XK_Shift_L);
+void pressShiftPLusKey(char key) {
+    pressKey(XK_Shift_L);
+    pressAndReleaseKey(key);
+    releaseKey(XK_Shift_L);
 }
 
 /*
     checks if the char needs shift
 */
-int l_needsShift(char key) {
+int needsShift(char key) {
     return (isupper(key) || key == '!' || key == '~' || key == '@' || key == '#' ||
         key == '$' || key == '%' || key == '^' || key == '&' || key == '*' ||
         key == '(' || key == ')' || key == '_' || key == '+' || key == '{' ||
@@ -53,27 +53,27 @@ int l_needsShift(char key) {
 /*
     press the char even if it needs shift or not
 */
-void l_upperOrLowerPress(char key) {
-    if (l_needsShift(key)) {
-        l_pressShiftPLusKey(key);
+void upperOrLowerPress(char key) {
+    if (needsShift(key)) {
+        pressShiftPLusKey(key);
     } else if (key == '\n') {
-        l_pressAndReleaseKey(XK_Return);
+        pressAndReleaseKey(XK_Return);
     } else {
-        l_pressAndReleaseKey(key);
+        pressAndReleaseKey(key);
     }
 }
 
 /*
     Press a series of keys corresponding to an array of char
 */
-void l_pressLine(const char *str) {
+void pressLine(const char *str) {
     for (size_t i = 0; i < strlen(str); i++) {
-        l_upperOrLowerPress(str[i]);
+        upperOrLowerPress(str[i]);
         usleep(10000);  // Add a small delay between key presses (adjust as needed)
     }
 }
 
-void l_moveMouse(int x, int y) {
+void moveMouse(int x, int y) {
     XWarpPointer(display, None, DefaultRootWindow(display), 0, 0, 0, 0, x, y);
     XFlush(display);
 }
@@ -81,7 +81,7 @@ void l_moveMouse(int x, int y) {
 /*
     Given a button press it and dont release it
 */
-void l_pressButton(int button) {
+void pressButton(int button) {
     XTestFakeButtonEvent(display, button, True, 0);
     XFlush(display);
 }
@@ -89,7 +89,7 @@ void l_pressButton(int button) {
 /*
     Given a button, release it
 */
-void l_releaseButton(int button) {
+void releaseButton(int button) {
     XTestFakeButtonEvent(display, button, False, 0);
     XFlush(display);
 }
@@ -97,12 +97,12 @@ void l_releaseButton(int button) {
 /*
     Press a button one time
 */
-void l_pressAndReleaseButton(int button) {
-    l_pressButton(button);
-    l_releaseButton(button);
+void pressAndReleaseButton(int button) {
+    pressButton(button);
+    releaseButton(button);
 }
 
-int l_startMain() {
+int startMain() {
     display = XOpenDisplay(NULL);
     if (!display) {
         fprintf(stderr, "Unable to open display\n");
@@ -115,7 +115,7 @@ int l_startMain() {
 
     if (xkbState.locked_mods & LockMask) {
         printf("Caps Lock is on. Turning it off...\n");
-        l_pressAndReleaseKey(XK_Caps_Lock);
+        pressAndReleaseKey(XK_Caps_Lock);
     } else {
         printf("Caps Lock is off.\n");
     }
