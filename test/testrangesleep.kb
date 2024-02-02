@@ -1,0 +1,6 @@
+def printL = line "pressedL"
+def rs = rangeSleep 1 5
+def testRepeat = repeat 10 (rs;printL;ENTER)
+
+-- Macro
+sleep 10;testRepeat

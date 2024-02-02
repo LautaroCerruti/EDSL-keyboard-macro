@@ -35,6 +35,8 @@ pTm (Key k)        = pK k
 pTm (Mouse x y)    = text "mouse" <+> int x <+> int y
 pTm (Usleep n)     = text "usleep" <+> int n
 pTm (Sleep n)      = text "sleep" <+> int n
+pTm (RangeSleep n m) = text "rangeSleep" <+> int n <+> int m
+pTm (RangeUSleep n m) = text "rangeUSleep" <+> int n <+> int m
 pTm (While k t)    = pK k <> text "+" <> parensIf (not (isKeyOrVar t)) (pTm t)
 pTm (Repeat n t)   = 
     text "repeat" 

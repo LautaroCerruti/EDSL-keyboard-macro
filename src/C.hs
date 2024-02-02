@@ -127,6 +127,9 @@ closeMain ('l') = closeMainLinux
 closeMain ('w') = closeMainWindows
 closeMain _ = empty
 
+randRange :: Int -> Int -> Doc
+randRange n m = text "(rand() % (" <> int m <> text " - " <> int n <> text " + 1)) + " <> int n 
+
 tm2DocGeneral :: Tm -> (Key -> Doc) -> Doc
 tm2DocGeneral (Var n) _ = text (n ++ "_();")
 tm2DocGeneral (Key k@(MouseButton _)) f = text "pressAndReleaseButton(" <> f k <> text ");"
@@ -134,6 +137,8 @@ tm2DocGeneral (Key k) f = text "pressAndReleaseKey(" <> f k <> text ");"
 tm2DocGeneral (Mouse x y) _ = text "moveMouse(" <> int x <> text ", " <> int y <> text ");"
 tm2DocGeneral (Usleep n) _ = text "usleep(" <> int n <> text ");"
 tm2DocGeneral (Sleep n) _ = text "sleep(" <> int n <> text ");"
+tm2DocGeneral (RangeSleep n m) _ = text "sleep(" <> randRange n m <> text ");"
+tm2DocGeneral (RangeUSleep n m) _ = text "usleep(" <> randRange n m <> text ");"
 tm2DocGeneral (Line str) _ = 
                                lbrace
                             $$ text "const char *textToType = \"" 

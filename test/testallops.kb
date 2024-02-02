@@ -16,5 +16,9 @@ def testAllRepeat = testRepeat;testTimeRepeat;testRepeat2
 -- testLine
 def printL = line "TeSt!! :)"
 
+-- range sleep and usleep
+def rs = rangeSleep 1 10
+def rus = rangeUSleep 1000 100000
+
 -- Macro
-sleep 10;testMouse;printL;testWhile;ENTER;ENTER;testAllRepeat
+sleep 10;rs;rus;testMouse;printL;testWhile;ENTER;ENTER;testAllRepeat

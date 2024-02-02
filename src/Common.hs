@@ -17,6 +17,8 @@ module Common where
         | Key Key
         | Usleep Int
         | Sleep Int
+        | RangeSleep Int Int
+        | RangeUSleep Int Int
         | While Key Tm
         | Repeat Int Tm
         | TimeRepeat Int Tm

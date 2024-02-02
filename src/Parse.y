@@ -22,6 +22,8 @@ import Data.Char
     TIMEREPEAT  { TTimeRepeat }
     SLEEP       { TSleep }
     USLEEP      { TUSleep }
+    RANGESLEEP  { TRangeSleep }
+    RANGEUSLEEP { TRangeUSleep }
     MOUSE       { TMouse }
     CHAR        { TChar $$ }
     INT         { TInt $$ }
@@ -70,6 +72,8 @@ Macro   :: { Tm }
         | Key '+' Macro                 { While $1 $3 }
         | SLEEP INT                     { Sleep $2 }
         | USLEEP INT                    { Usleep $2 }
+        | RANGESLEEP INT INT            { RangeSleep $2 $3 }
+        | RANGEUSLEEP INT INT           { RangeUSleep $2 $3 }
         | MOUSE INT INT                 { Mouse $2 $3 }
         | STRING                        { Var $1 }
         | Key                           { Key $1 }
@@ -159,6 +163,8 @@ data Token = TString String
                | TTimeRepeat
                | TSleep
                | TUSleep
+               | TRangeSleep
+               | TRangeUSleep
                | TLARROW
                | TUARROW
                | TDARROW
@@ -211,6 +217,8 @@ lexer cont s = case s of
                               ("timeRepeat",rest)  -> cont TTimeRepeat rest
                               ("sleep",rest)  -> cont TSleep rest
                               ("usleep",rest) -> cont TUSleep rest
+                              ("rangeSleep",rest)  -> cont TRangeSleep rest
+                              ("rangeUSleep",rest) -> cont TRangeUSleep rest
                               ("mouse",rest) -> cont TMouse rest
                               ("LMB", rest) -> cont (TMButton 1) rest 
                               ("MMB", rest) -> cont (TMButton 2) rest 
