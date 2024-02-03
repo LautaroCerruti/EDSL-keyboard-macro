@@ -41,8 +41,3 @@ stack exec EDSL-keyboard-macro-exe -- test/mouse.kb -c -e
 ```
 
 Tener en cuenta que el codigo C se puede generar eligiendo la plataforma (con `-l` o `-w`) y no depende de en que sistema operativo estamos ejecutando el compilador. Esto no es asi con la generacion del ejecutable o la opcion de correr el macro, estas tienen como restriccion que el compilador este funcionando en el mismo SO para el que se lo esta tratando de compilar.
-
-TO-DO:
-- revise why macro execution returns in error insted of success
-- change to C instead of C++
-- wheel scroll
